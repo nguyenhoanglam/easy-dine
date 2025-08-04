@@ -1,0 +1,4 @@
+# By default, Prettier will also follow rules specified in the ".gitignore" file  
+
+# Shadcn generated files
+src/components/ui/*
