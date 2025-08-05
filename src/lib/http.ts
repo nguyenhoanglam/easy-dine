@@ -1,8 +1,8 @@
+import chalk from "chalk";
 import { redirect } from "next/navigation";
 
-import { HttpStatus, StorageKey } from "@/lib/constants";
+import { HttpStatus, SearchParamKey } from "@/lib/constants";
 import { env } from "@/lib/env";
-import { getCookie } from "@/lib/utils";
 import {
   EntityError,
   HttpError,
@@ -11,12 +11,13 @@ import {
   HttpSuccess,
   HttpSuccessRaw,
 } from "@/types/http";
+import { getCookie } from "@/utils/storage";
 
 const IGNORE_UNAUTHORIZED_PATHS = ["/auth/logout"];
 
 /*
- * HttpClient must be called only from server-side
- * We do not call api directly from the client-side
+ * HttpClient must be called only from server-side because it uses cookies.
+ * Client-side should call server action instead.
  */
 class HttpClient {
   private getURL(endpoint: string, baseURL?: string) {
@@ -97,6 +98,22 @@ class HttpClient {
     };
   }
 
+  private log({
+    method = "GET",
+    endpoint,
+    status,
+  }: {
+    method?: string;
+    endpoint: string;
+    status: number;
+  }) {
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `${method} ${endpoint} ${status >= 400 ? chalk.red(status) : chalk.green(status)}`,
+      );
+    }
+  }
+
   private flattenSuccessResponse<T, E extends object>(
     res: HttpSuccessRaw<T, E>,
   ): HttpSuccess<T, E> {
@@ -147,6 +164,12 @@ class HttpClient {
       // This allows request caller can handle the response and implement logout fllow
       if (response.status === HttpStatus.Unauthorized) {
         const { pathname } = new URL(response.url);
+
+        this.log({
+          method: options.method,
+          endpoint: response.url,
+          status: response.status,
+        });
 
         if (!IGNORE_UNAUTHORIZED_PATHS.includes(pathname) && withAuth) {
           throw new Error("UNAUTHORIZED");
@@ -225,13 +248,21 @@ class HttpClient {
 
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        const response = await fetch(url, requestConfig);
-        return await this.parseResponse<T, E>(response, options);
+        const fetchResponse = await fetch(url, requestConfig);
+        const response = await this.parseResponse<T, E>(fetchResponse, options);
+
+        this.log({
+          method: requestConfig.method,
+          endpoint: url,
+          status: fetchResponse.status,
+        });
+
+        return response;
       } catch (error: unknown) {
-        // Redirect for 401 error
+        // Unauthorized error
         if (error instanceof Error && error.message === "UNAUTHORIZED") {
           const refreshToken = await getCookie("refresh_token");
-          redirect(`/logout?${StorageKey.RefreshToken}=${refreshToken}`);
+          redirect(`/logout?${SearchParamKey.RefreshToken}=${refreshToken}`);
         }
 
         // Network error

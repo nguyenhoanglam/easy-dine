@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { StorageKey } from "@/lib/constants";
+import { SearchParamKey, StorageKey } from "@/lib/constants";
 
 const AUTH_ROUTES = ["/login"];
 const PRIVATE_ROUTES = [
@@ -36,8 +36,9 @@ export async function middleware(request: NextRequest) {
     }
 
     if (!accessToken) {
-      const url = new URL("/logout", request.url);
-      url.searchParams.set(StorageKey.RefreshToken, refreshToken);
+      const url = new URL("/refresh-token", request.url);
+      url.searchParams.set(SearchParamKey.RefreshToken, refreshToken);
+      url.searchParams.set(SearchParamKey.Redirect, pathname);
 
       return NextResponse.redirect(url);
     }

@@ -1,10 +1,35 @@
 "use server";
 
 import { httpClient } from "@/lib/http";
-import { decodeJWT, getCookie, removeCookie, setCookie } from "@/lib/utils";
-import { LoginReqBody, LoginResData, LogoutReqBody } from "@/types/auth";
+import {
+  LoginReqBody,
+  LoginResData,
+  LogoutReqBody,
+  RefreshTokenReqBody,
+  RefreshTokenResData,
+} from "@/types/auth";
+import { decodeJWT } from "@/utils/common";
+import { getCookie, removeCookie, setCookie } from "@/utils/storage";
 
 const BASE_PATH = "/auth";
+
+async function setTokenCookies({
+  accessToken,
+  refreshToken,
+}: {
+  accessToken: string;
+  refreshToken: string;
+}) {
+  const accessTokenExpires = decodeJWT(accessToken)!.exp * 1000;
+  const refreshTokenExpires = decodeJWT(refreshToken)!.exp * 1000;
+
+  await setCookie("access_token", accessToken, {
+    expires: accessTokenExpires,
+  });
+  await setCookie("refresh_token", refreshToken, {
+    expires: refreshTokenExpires,
+  });
+}
 
 // Must be called from client-side only
 export async function loginAction(body: LoginReqBody) {
@@ -18,14 +43,10 @@ export async function loginAction(body: LoginReqBody) {
 
   if (response.ok) {
     const { accessToken, refreshToken } = response.data;
-    const accessTokenExpiry = decodeJWT(accessToken)?.exp;
-    const refreshTokenExpiry = decodeJWT(refreshToken)?.exp;
 
-    await setCookie("access_token", accessToken, {
-      expires: accessTokenExpiry ? accessTokenExpiry * 1000 : undefined,
-    });
-    await setCookie("refresh_token", refreshToken, {
-      expires: refreshTokenExpiry ? refreshTokenExpiry * 1000 : undefined,
+    await setTokenCookies({
+      accessToken,
+      refreshToken,
     });
   }
 
@@ -42,6 +63,30 @@ export async function logoutAction() {
 
   await removeCookie("access_token");
   await removeCookie("refresh_token");
+
+  return response;
+}
+
+export async function refreshTokenAction() {
+  const refreshToken = await getCookie("refresh_token");
+
+  const body: RefreshTokenReqBody = {
+    refreshToken: refreshToken ?? "",
+  };
+
+  const response = await httpClient.post<RefreshTokenResData>(
+    `${BASE_PATH}/refresh-token`,
+    body,
+  );
+
+  if (response.ok) {
+    const { accessToken, refreshToken } = response.data;
+
+    await setTokenCookies({
+      accessToken,
+      refreshToken,
+    });
+  }
 
   return response;
 }

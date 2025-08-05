@@ -8,14 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useChangePasswordMutation } from "@/hooks/account";
-import {
-  setLocalStorage,
-  showResponseError,
-  showResponseSuccess,
-} from "@/lib/utils";
+import { useChangePasswordMutation } from "@/queries/account";
 import { changePasswordSchema } from "@/schemas/account";
 import { ChangePasswordReqBody } from "@/types/account";
+import { setLocalStorage } from "@/utils/storage";
+import { showResponseError, showResponseSuccess } from "@/utils/ui";
 
 export default function ChangePasswordForm() {
   const mutation = useChangePasswordMutation();
@@ -47,10 +44,10 @@ export default function ChangePasswordForm() {
 
     const { accessToken, refreshToken, account } = response.data;
 
+    form.reset();
     setLocalStorage("access_token", accessToken);
     setLocalStorage("refresh_token", refreshToken);
     setLocalStorage("account", JSON.stringify(account));
-    form.reset();
     showResponseSuccess(response);
   };
 

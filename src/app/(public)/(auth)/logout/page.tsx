@@ -1,39 +1,21 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
-import { useLogoutMutation } from "@/hooks/auth";
-import { StorageKey } from "@/lib/constants";
-import { getLocalStorage, removeLocalStorage } from "@/lib/utils";
+import { SearchParamKey } from "@/lib/constants";
+import { useLogoutMutation } from "@/queries/auth";
+import { createUniqueRunning } from "@/utils/common";
+import { getLocalStorage, removeLocalStorage } from "@/utils/storage";
 
 export default function LogoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { mutateAsync } = useLogoutMutation();
-  const isMutatingRef = useRef(false);
 
-  const refreshTokenParam = searchParams.get(StorageKey.RefreshToken);
+  const refreshTokenParam = searchParams.get(SearchParamKey.RefreshToken);
 
   useEffect(() => {
-    async function logout() {
-      isMutatingRef.current = true;
-
-      await mutateAsync();
-
-      isMutatingRef.current = false;
-
-      removeLocalStorage("access_token");
-      removeLocalStorage("refresh_token");
-      removeLocalStorage("account");
-
-      router.push("/login");
-    }
-
-    if (isMutatingRef.current) {
-      return;
-    }
-
     // Do not allow logout if the refresh token is not provided or does not match
     if (
       !refreshTokenParam ||
@@ -42,6 +24,16 @@ export default function LogoutPage() {
       router.push("/login");
       return;
     }
+
+    const logout = createUniqueRunning(async () => {
+      await mutateAsync();
+
+      removeLocalStorage("access_token");
+      removeLocalStorage("refresh_token");
+      removeLocalStorage("account");
+
+      router.push("/login");
+    });
 
     logout();
   }, [mutateAsync, refreshTokenParam, router]);

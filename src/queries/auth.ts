@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { loginAction, logoutAction } from "@/actions/auth";
+import { loginAction, logoutAction, refreshTokenAction } from "@/actions/auth";
 
 export function useLoginMutation() {
   return useMutation({
@@ -11,5 +11,11 @@ export function useLoginMutation() {
 export function useLogoutMutation() {
   return useMutation({
     mutationFn: logoutAction,
+  });
+}
+
+export function useRefreshTokenMutation() {
+  return useMutation({
+    mutationFn: refreshTokenAction,
   });
 }

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { useMounted } from "@/lib/hooks";
-import { cn, getLocalStorage } from "@/lib/utils";
+import { getLocalStorage } from "@/utils/storage";
+import { cn } from "@/utils/ui";
 
 const menuItems = [
   {

@@ -12,6 +12,11 @@ export const StorageKey = {
   Account: "account",
 } as const;
 
+export const SearchParamKey = {
+  Redirect: "redirect",
+  RefreshToken: "refresh_token",
+};
+
 export const TokenType = {
   ForgotPasswordToken: "ForgotPasswordToken",
   AccessToken: "AccessToken",

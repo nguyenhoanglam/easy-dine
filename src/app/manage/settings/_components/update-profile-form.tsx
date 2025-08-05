@@ -11,11 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useProfileQuery, useUpdateProfileMutation } from "@/hooks/account";
-import { useUploadImageMutation } from "@/hooks/media";
-import { showResponseError, showResponseSuccess } from "@/lib/utils";
+import { useProfileQuery, useUpdateProfileMutation } from "@/queries/account";
+import { useUploadImageMutation } from "@/queries/media";
 import { updateProfileSchema } from "@/schemas/account";
 import { UpdateProfileReqBody } from "@/types/account";
+import { showResponseError, showResponseSuccess } from "@/utils/ui";
 
 export default function UpdateProfileForm() {
   const avatarInputRef = useRef<HTMLInputElement>(null);

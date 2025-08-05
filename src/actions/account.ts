@@ -1,7 +1,6 @@
 "use server";
 
 import { httpClient } from "@/lib/http";
-import { decodeJWT, setCookie } from "@/lib/utils";
 import {
   ChangePasswordReqBody,
   ChangePasswordResData,
@@ -9,6 +8,8 @@ import {
   UpdateProfileReqBody,
   UpdateProfileResData,
 } from "@/types/account";
+import { decodeJWT } from "@/utils/common";
+import { setCookie } from "@/utils/storage";
 
 const BASE_PATH = "/accounts";
 

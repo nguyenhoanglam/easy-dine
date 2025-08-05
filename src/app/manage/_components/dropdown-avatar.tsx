@@ -13,9 +13,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useProfileQuery } from "@/hooks/account";
-import { useLogoutMutation } from "@/hooks/auth";
-import { removeLocalStorage } from "@/lib/utils";
+import { useProfileQuery } from "@/queries/account";
+import { useLogoutMutation } from "@/queries/auth";
+import { removeLocalStorage } from "@/utils/storage";
 
 export default function DropdownAvatar() {
   const router = useRouter();

@@ -15,14 +15,11 @@ import {
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useLoginMutation } from "@/hooks/auth";
-import {
-  setLocalStorage,
-  showResponseError,
-  showResponseSuccess,
-} from "@/lib/utils";
+import { useLoginMutation } from "@/queries/auth";
 import { loginRequestSchema } from "@/schemas/auth";
 import { LoginReqBody } from "@/types/auth";
+import { setLocalStorage } from "@/utils/storage";
+import { showResponseError, showResponseSuccess } from "@/utils/ui";
 
 export default function LoginForm() {
   const router = useRouter();

@@ -3,7 +3,7 @@ import { Loader } from "lucide-react";
 import * as React from "react";
 
 import { Button as UIButton, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/ui";
 
 interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
