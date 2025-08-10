@@ -5,6 +5,8 @@ import { SearchParamKey, StorageKey } from "@/lib/constants";
 const AUTH_ROUTES = ["/login"];
 const PRIVATE_ROUTES = [
   "/manage/dashboard",
+  "/manage/accounts",
+  "/manage/dishes",
   "/manage/settings",
   "/settings",
   "/orders",
@@ -32,7 +34,9 @@ export async function middleware(request: NextRequest) {
 
   if (isPrivateRoute(pathname)) {
     if (!refreshToken) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      const url = new URL("/login", request.url);
+      url.searchParams.set(SearchParamKey.ClearTokens, "true");
+      return NextResponse.redirect(url);
     }
 
     if (!accessToken) {

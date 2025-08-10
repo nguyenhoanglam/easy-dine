@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import { redirect } from "next/navigation";
 
+import { getCookie } from "@/helpers/storage";
 import { HttpStatus, SearchParamKey } from "@/lib/constants";
 import { env } from "@/lib/env";
 import {
@@ -11,7 +12,6 @@ import {
   HttpSuccess,
   HttpSuccessRaw,
 } from "@/types/http";
-import { getCookie } from "@/utils/storage";
 
 const IGNORE_UNAUTHORIZED_PATHS = ["/auth/logout"];
 
@@ -52,6 +52,7 @@ class HttpClient {
 
     if (withAuth) {
       const accessToken = await getCookie("access_token");
+
       if (accessToken) {
         headers["Authorization"] = `Bearer ${accessToken}`;
       }
@@ -158,7 +159,8 @@ class HttpClient {
         message: "Invalid response format",
       };
     }
-
+    console.log(1111);
+    console.log(response);
     if (!response.ok) {
       // Don't redirect for `/auth/logout` endpoint or public endpoints
       // This allows request caller can handle the response and implement logout fllow

@@ -11,16 +11,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { showResponseError, showResponseSuccess } from "@/lib/utils";
 import { useProfileQuery, useUpdateProfileMutation } from "@/queries/account";
 import { useUploadImageMutation } from "@/queries/media";
 import { updateProfileSchema } from "@/schemas/account";
 import { UpdateProfileReqBody } from "@/types/account";
-import { showResponseError, showResponseSuccess } from "@/utils/ui";
 
 export default function UpdateProfileForm() {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const { data } = useProfileQuery();
+
+  const profileQuery = useProfileQuery();
   const updateProfileMutation = useUpdateProfileMutation();
   const uploadMediaMutation = useUploadImageMutation();
 
@@ -28,7 +29,7 @@ export default function UpdateProfileForm() {
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
       name: "",
-      avatar: "",
+      avatar: undefined,
     },
   });
 
@@ -44,15 +45,23 @@ export default function UpdateProfileForm() {
   }, [avatar, avatarFile]);
 
   useEffect(() => {
-    if (data) {
+    if (profileQuery.data) {
+      const response = profileQuery.data;
+
+      if (!response.ok) {
+        showResponseError(response);
+        return;
+      }
+
+      const { name, avatar } = response.data;
       form.reset({
-        name: data.name,
-        avatar: data.avatar || "",
+        name,
+        avatar: avatar || undefined,
       });
     }
-  }, [data, form]);
+  }, [form, profileQuery.data]);
 
-  const onReset = () => {
+  const reset = () => {
     form.reset();
     setAvatarFile(null);
   };
@@ -88,6 +97,7 @@ export default function UpdateProfileForm() {
     }
 
     showResponseSuccess(updateProfileResponse);
+    reset();
   };
 
   return (
@@ -95,7 +105,7 @@ export default function UpdateProfileForm() {
       <form
         noValidate
         className="grid auto-rows-max items-start gap-4 md:gap-8"
-        onReset={onReset}
+        onReset={reset}
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <Card x-chunk="dashboard-07-chunk-0">

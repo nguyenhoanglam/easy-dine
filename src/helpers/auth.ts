@@ -1,6 +1,10 @@
 import { refreshTokenAction } from "@/actions/auth";
-import { decodeJWT } from "@/utils/common";
-import { getLocalStorage, setLocalStorage } from "@/utils/storage";
+import {
+  getLocalStorage,
+  removeAuthLocalStorage,
+  setAuthLocalStorage,
+} from "@/helpers/storage";
+import { decodeJWT } from "@/lib/utils";
 
 type RefreshTokenActionPromise = ReturnType<typeof refreshTokenAction> | null;
 
@@ -23,13 +27,14 @@ export async function checkAndRefreshToken({
 
     const decodedAccessToken = decodeJWT(accessToken)!;
     const decodedRefreshToken = decodeJWT(refreshToken)!;
-    const now = Date.now() / 1000;
-
+    const now = Date.now() / 1000 - 1; // Subtract 1 second to ensure the token is deleted before calling refresh token API
     // If the access token is expired, do not refresh
-    if (decodedRefreshToken.exp <= now) {
+    if (now >= decodedRefreshToken.exp) {
+      removeAuthLocalStorage();
+      onError?.();
+
       return;
     }
-
     if (
       decodedAccessToken.exp - now <
       (decodedAccessToken.exp - decodedAccessToken.iat) / 3
@@ -46,7 +51,6 @@ export async function checkAndRefreshToken({
       }
 
       const response = await action;
-
       refreshTokenActionPromise = null;
 
       if (!response.ok) {
@@ -55,8 +59,8 @@ export async function checkAndRefreshToken({
       }
 
       if (response.ok) {
-        setLocalStorage("access_token", response.data.accessToken);
-        setLocalStorage("refresh_token", response.data.refreshToken);
+        const { accessToken, refreshToken } = response.data;
+        setAuthLocalStorage({ accessToken, refreshToken });
         onSuccess?.();
       }
     }

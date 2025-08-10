@@ -1,14 +1,15 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import { checkAndRefreshToken } from "@/utils/token";
+import { checkAndRefreshToken } from "@/helpers/auth";
 
 const AUTH_ROUTES = ["/login", "/logout", "/refresh-token"];
-const INTERVAL_TIME = 5 * 60 * 1000; // 5 minutes
+const INTERVAL_TIME = 5 * 60 * 1000; // 5 minutes - change this value as needed
 
 export default function RefreshToken() {
+  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
@@ -23,13 +24,15 @@ export default function RefreshToken() {
         clearInterval(intervalId);
         intervalId = undefined;
       }
+
+      router.push("/login");
     }
 
     checkAndRefreshToken({ onError });
     setInterval(() => checkAndRefreshToken({ onError }), INTERVAL_TIME);
 
     return () => clearInterval(intervalId);
-  }, [pathname]);
+  }, [pathname, router]);
 
   return null;
 }

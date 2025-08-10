@@ -8,11 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { setAuthLocalStorage } from "@/helpers/storage";
+import { showResponseError, showResponseSuccess } from "@/lib/utils";
 import { useChangePasswordMutation } from "@/queries/account";
 import { changePasswordSchema } from "@/schemas/account";
 import { ChangePasswordReqBody } from "@/types/account";
-import { setLocalStorage } from "@/utils/storage";
-import { showResponseError, showResponseSuccess } from "@/utils/ui";
 
 export default function ChangePasswordForm() {
   const mutation = useChangePasswordMutation();
@@ -26,7 +26,7 @@ export default function ChangePasswordForm() {
     },
   });
 
-  const onReset = () => {
+  const reset = () => {
     form.reset();
   };
 
@@ -45,9 +45,7 @@ export default function ChangePasswordForm() {
     const { accessToken, refreshToken, account } = response.data;
 
     form.reset();
-    setLocalStorage("access_token", accessToken);
-    setLocalStorage("refresh_token", refreshToken);
-    setLocalStorage("account", JSON.stringify(account));
+    setAuthLocalStorage({ accessToken, refreshToken, account });
     showResponseSuccess(response);
   };
 
@@ -56,7 +54,7 @@ export default function ChangePasswordForm() {
       <form
         noValidate
         className="grid auto-rows-max items-start gap-4 md:gap-8"
-        onReset={onReset}
+        onReset={reset}
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <Card className="overflow-hidden" x-chunk="dashboard-07-chunk-4">

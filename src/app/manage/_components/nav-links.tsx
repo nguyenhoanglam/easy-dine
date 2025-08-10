@@ -10,7 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/utils/ui";
+import { cn } from "@/lib/utils";
 
 export default function NavLinks() {
   const pathname = usePathname();

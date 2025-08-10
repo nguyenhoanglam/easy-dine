@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { useAuthContext } from "@/components/app-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,22 +16,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useProfileQuery } from "@/queries/account";
 import { useLogoutMutation } from "@/queries/auth";
-import { removeLocalStorage } from "@/utils/storage";
 
 export default function DropdownAvatar() {
   const router = useRouter();
+  const { setLoggedIn } = useAuthContext();
   const logoutMutation = useLogoutMutation();
-  const { data: account } = useProfileQuery();
+  const profileQuery = useProfileQuery();
+
+  const account = profileQuery.data?.ok ? profileQuery.data.data : null;
 
   const handleLogout = async () => {
     if (logoutMutation.isPending) return;
 
     await logoutMutation.mutateAsync();
 
-    removeLocalStorage("access_token");
-    removeLocalStorage("refresh_token");
-    removeLocalStorage("account");
-
+    setLoggedIn(false);
     router.push("/");
   };
 

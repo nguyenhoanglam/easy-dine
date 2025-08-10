@@ -15,6 +15,8 @@ export const StorageKey = {
 export const SearchParamKey = {
   Redirect: "redirect",
   RefreshToken: "refresh_token",
+  ClearTokens: "clear_tokens",
+  Page: "page",
 };
 
 export const TokenType = {

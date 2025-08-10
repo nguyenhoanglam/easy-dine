@@ -28,7 +28,6 @@ const menuItems = [
     Icon: Salad,
     href: "/manage/dishes",
   },
-
   {
     title: "Phân tích",
     Icon: LineChart,

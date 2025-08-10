@@ -1,10 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components";
+import { useAuthContext } from "@/components/app-provider";
 import {
   Card,
   CardContent,
@@ -15,15 +17,20 @@ import {
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { setAuthLocalStorage } from "@/helpers/storage";
+import { SearchParamKey } from "@/lib/constants";
+import { showResponseError, showResponseSuccess } from "@/lib/utils";
 import { useLoginMutation } from "@/queries/auth";
 import { loginRequestSchema } from "@/schemas/auth";
 import { LoginReqBody } from "@/types/auth";
-import { setLocalStorage } from "@/utils/storage";
-import { showResponseError, showResponseSuccess } from "@/utils/ui";
 
 export default function LoginForm() {
   const router = useRouter();
+  const { setLoggedIn } = useAuthContext();
   const loginMutation = useLoginMutation();
+  const searchParams = useSearchParams();
+
+  const clearTokens = searchParams.get(SearchParamKey.ClearTokens);
 
   const form = useForm<LoginReqBody>({
     resolver: zodResolver(loginRequestSchema),
@@ -32,6 +39,12 @@ export default function LoginForm() {
       password: "111111",
     },
   });
+
+  useEffect(() => {
+    if (clearTokens === "true") {
+      setLoggedIn(false);
+    }
+  }, [clearTokens, setLoggedIn]);
 
   const onSubmit = async (data: LoginReqBody) => {
     const response = await loginMutation.mutateAsync(data);
@@ -42,12 +55,9 @@ export default function LoginForm() {
     }
 
     const { accessToken, refreshToken, account } = response.data;
-    setLocalStorage("access_token", accessToken);
-    setLocalStorage("refresh_token", refreshToken);
-    setLocalStorage("account", JSON.stringify(account));
-
+    setAuthLocalStorage({ accessToken, refreshToken, account });
     showResponseSuccess(response);
-
+    setLoggedIn(true);
     router.push("/manage/dashboard");
   };
 
@@ -98,7 +108,7 @@ export default function LoginForm() {
                       <Input
                         id="password"
                         type="password"
-                        autoComplete="on"
+                        autoComplete="current-password"
                         required
                         {...field}
                       />

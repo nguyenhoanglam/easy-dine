@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { useMounted } from "@/lib/hooks";
-import { getLocalStorage } from "@/utils/storage";
-import { cn } from "@/utils/ui";
+import { cn } from "@/lib/utils";
+
+import { useAuthContext } from "./app-provider";
 
 const menuItems = [
   {
@@ -29,16 +30,6 @@ const menuItems = [
   },
 ];
 
-function getAccount() {
-  try {
-    const account = getLocalStorage("account");
-    return account ? JSON.parse(account) : null;
-  } catch (error) {
-    console.error("Failed to parse account from localStorage:", error);
-    return null;
-  }
-}
-
 interface Props {
   className?: string;
 }
@@ -46,19 +37,19 @@ interface Props {
 export default function NavItems({ className }: Props) {
   const mounted = useMounted();
   const pathname = usePathname();
+  const { isLoggedIn } = useAuthContext();
+  console.log("🚀 ~ NavItems ~ isLoggedIn:", isLoggedIn);
 
   if (!mounted) {
     return null;
   }
 
-  const account = getAccount();
-
   return menuItems.map((item) => {
     const { href, title, authRequired } = item;
 
     if (
-      (authRequired === true && !account) ||
-      (authRequired === false && account)
+      (authRequired === true && !isLoggedIn) ||
+      (authRequired === false && isLoggedIn)
     ) {
       return null;
     }
