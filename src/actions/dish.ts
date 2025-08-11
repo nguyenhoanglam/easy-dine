@@ -1,12 +1,25 @@
 "use server";
 
 import { httpClient } from "@/lib/http";
-import { CreateDishReqBody, Dish, UpdateDishReqBody } from "@/types/dish";
+import {
+  CreateDishReqBody,
+  Dish,
+  DishListResData,
+  UpdateDishReqBody,
+} from "@/types/dish";
+import { PaginationParams } from "@/types/others";
 
 const basePath = "/dishes";
 
-export async function getDishListAction() {
-  return httpClient.get<Dish[]>(basePath);
+export async function getDishListAction({ page, limit }: PaginationParams) {
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
+
+  return httpClient.get<DishListResData>(
+    `${basePath}/pagination?${searchParams.toString()}`,
+  );
 }
 
 export async function createDishAction(body: CreateDishReqBody) {

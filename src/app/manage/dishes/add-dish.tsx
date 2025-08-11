@@ -137,7 +137,9 @@ export default function AddDish() {
             className="grid auto-rows-max items-start gap-4 md:gap-8"
             id="add-dish-form"
             onReset={reset}
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={form.handleSubmit(onSubmit, (e) => {
+              console.log(e);
+            })}
           >
             <div className="grid gap-4 py-4">
               <FormField
@@ -177,6 +179,7 @@ export default function AddDish() {
                         <span className="sr-only">Upload</span>
                       </button>
                     </div>
+                    <FormMessage />
                   </FormItem>
                 )}
               />

@@ -1,37 +1,27 @@
 import z from "zod";
 
 import { Role } from "@/lib/constants";
-
-export const nameSchema = z
-  .string()
-  .trim()
-  .min(2, { error: "Tên tài khoản phải có ít nhất 2 ký tự." })
-  .max(256, { error: "Tên tài khoản không được quá 256 ký tự." });
-
-const avatarSchema = z.string().nullable();
-
-const emailSchema = z.email({
-  error: "Email không hợp lệ.",
-});
-
-const passwordSchema = z
-  .string()
-  .min(6, { error: "Mật khẩu phải có ít nhất 6 ký tự." })
-  .max(100, { error: "Mật khẩu không được quá 100 ký tự." });
+import {
+  accoutnNameSchema,
+  avatarSchema,
+  confirmPasswordSchema,
+  emailSchema,
+  passwordSchema,
+} from "@/schemas/common";
 
 const roleSchema = z.enum([Role.Employee, Role.Owner]);
 
 export const accountSchema = z.object({
   id: z.number(),
-  name: nameSchema,
+  name: accoutnNameSchema,
   email: emailSchema,
-  role: roleSchema,
   avatar: avatarSchema,
+  role: roleSchema,
 });
 
 export const updateProfileSchema = z
   .object({
-    name: nameSchema,
+    name: accoutnNameSchema,
     avatar: avatarSchema,
   })
   .strict();
@@ -40,7 +30,7 @@ export const changePasswordSchema = z
   .object({
     oldPassword: passwordSchema,
     password: passwordSchema,
-    confirmPassword: passwordSchema,
+    confirmPassword: confirmPasswordSchema,
   })
   .strict()
   .superRefine(({ password, confirmPassword }, ctx) => {
@@ -55,7 +45,7 @@ export const changePasswordSchema = z
 
 export const createEmployeeAccountSchema = z
   .object({
-    name: nameSchema,
+    name: accoutnNameSchema,
     email: emailSchema,
     avatar: avatarSchema,
     password: passwordSchema,
@@ -74,12 +64,12 @@ export const createEmployeeAccountSchema = z
 
 export const updateEmployeeAccountSchema = z
   .object({
-    name: nameSchema,
+    name: accoutnNameSchema,
     email: emailSchema,
     avatar: avatarSchema,
     changePassword: z.boolean().optional(),
     password: passwordSchema.optional(),
-    confirmPassword: passwordSchema.optional(),
+    confirmPassword: confirmPasswordSchema.optional(),
     role: roleSchema.optional(),
   })
   .strict()

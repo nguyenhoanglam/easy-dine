@@ -9,48 +9,48 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { showResponseError, showResponseSuccess } from "@/lib/utils";
-import { useDeleteDishMutation } from "@/queries/dish";
-import { Dish } from "@/types/dish";
+import { useDeleteTableMutation } from "@/queries/table";
+import { Table } from "@/types/table";
 
 interface Props {
-  dish: Dish | null;
-  setDish: (value: Dish | null) => void;
+  table: Table | null;
+  setTable: (value: Table | null) => void;
 }
 
-export default function DeleteDish({ dish, setDish }: Props) {
-  const { mutateAsync, isPending } = useDeleteDishMutation();
+export default function DeleteTable({ table, setTable }: Props) {
+  const { mutateAsync, isPending } = useDeleteTableMutation();
 
   const handleDelete = async () => {
-    if (!dish) {
+    if (!table) {
       return;
     }
 
-    const response = await mutateAsync(dish.id);
+    const response = await mutateAsync(table.number);
 
     if (!response.ok) {
       showResponseError(response);
       return;
     }
 
-    setDish(null);
+    setTable(null);
     showResponseSuccess(response);
   };
 
   return (
     <AlertDialog
-      open={!!dish}
+      open={!!table}
       onOpenChange={(value) => {
         if (!value) {
-          setDish(null);
+          setTable(null);
         }
       }}
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Xóa món ăn?</AlertDialogTitle>
+          <AlertDialogTitle>Xóa bàn ăn?</AlertDialogTitle>
           <AlertDialogDescription>
-            Món <strong className="text-foreground">{dish?.name}</strong> sẽ bị
-            xóa vĩnh viễn
+            Bàn <strong className="text-foreground">{table?.number}</strong> sẽ
+            bị xóa vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

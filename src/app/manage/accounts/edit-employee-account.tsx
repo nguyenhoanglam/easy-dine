@@ -4,8 +4,8 @@ import { Upload } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { Button } from "@/components";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -130,8 +130,8 @@ export default function EditEmployeeAccount({
     }
 
     reset();
-    showResponseSuccess(updateProfileResponse);
     onSubmitSuccess?.();
+    showResponseSuccess(updateProfileResponse);
   };
 
   return (
@@ -156,10 +156,7 @@ export default function EditEmployeeAccount({
             className="grid auto-rows-max items-start gap-4 md:gap-8"
             id="edit-employee-form"
             onReset={reset}
-            onSubmit={form.handleSubmit(onSubmit, (e) => {
-              console.log(form.getValues());
-              console.log(e);
-            })}
+            onSubmit={form.handleSubmit(onSubmit)}
           >
             <div className="grid gap-4 py-4">
               <FormField
@@ -304,7 +301,11 @@ export default function EditEmployeeAccount({
           </form>
         </Form>
         <DialogFooter>
-          <Button type="submit" form="edit-employee-form">
+          <Button
+            type="submit"
+            form="edit-employee-form"
+            loading={form.formState.isSubmitting}
+          >
             Lưu
           </Button>
         </DialogFooter>

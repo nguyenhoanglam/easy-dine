@@ -14,13 +14,11 @@ import {
   VisibilityState,
 } from "@tanstack/react-table";
 import { useSearchParams } from "next/navigation";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-import AddDish from "@/app/manage/dishes/add-dish";
-import DeleteDish from "@/app/manage/dishes/delete-dish";
-import EditDish from "@/app/manage/dishes/edit-dish";
+import AddTable from "@/app/manage/tables/add-table";
+import EditTable from "@/app/manage/tables/edit-table";
 import AutoPagination from "@/components/auto-pagination";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -39,89 +37,66 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SearchParamKey } from "@/lib/constants";
-import {
-  formatCurrency,
-  getTablePaginatedQueryData,
-  getVietnameseDishStatus,
-} from "@/lib/utils";
-import { useDishListQuery } from "@/queries/dish";
-import { Dish } from "@/types/dish";
+import { getTableQueryData, getVietnameseTableStatus } from "@/lib/utils";
+import { useTableListQuery } from "@/queries/table";
+import { Table as TableType } from "@/types/table";
 
-const PAGE_SIZE = 2;
+import DeleteTable from "./delete-table";
 
-const DishTableContext = createContext<{
-  dishIdToEdit: number | undefined;
-  setDishIdToEdit: (value: number) => void;
-  dishToDelete: Dish | null;
-  setDishToDelete: (value: Dish | null) => void;
+const PAGE_SIZE = 10;
+
+const TableTableContext = createContext<{
+  tableIdToEdit: number | undefined;
+  setTableIdToEdit: (value: number) => void;
+  tableToDelete: TableType | null;
+  setTableToDelete: (value: TableType | null) => void;
 }>({
-  dishIdToEdit: undefined,
-  setDishIdToEdit: () => {},
-  dishToDelete: null,
-  setDishToDelete: () => {},
+  tableIdToEdit: undefined,
+  setTableIdToEdit: () => {},
+  tableToDelete: null,
+  setTableToDelete: () => {},
 });
 
-const columns: ColumnDef<Dish>[] = [
+export const columns: ColumnDef<TableType>[] = [
   {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
-    accessorKey: "image",
-    header: "Ảnh",
+    accessorKey: "number",
+    header: "Số bàn",
     cell: ({ row }) => (
-      <div>
-        <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
-          <AvatarImage src={row.getValue("image")} />
-          <AvatarFallback className="rounded-none">
-            {row.original.name}
-          </AvatarFallback>
-        </Avatar>
-      </div>
+      <div className="capitalize">{row.getValue("number")}</div>
     ),
   },
   {
-    accessorKey: "name",
-    header: "Tên",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "price",
-    header: "Giá cả",
+    accessorKey: "capacity",
+    header: "Sức chứa",
     cell: ({ row }) => (
-      <div className="capitalize">{formatCurrency(row.getValue("price"))}</div>
-    ),
-  },
-  {
-    accessorKey: "description",
-    header: "Mô tả",
-    cell: ({ row }) => (
-      <div
-        dangerouslySetInnerHTML={{ __html: row.getValue("description") }}
-        className="whitespace-pre-line"
-      />
+      <div className="capitalize">{row.getValue("capacity")}</div>
     ),
   },
   {
     accessorKey: "status",
     header: "Trạng thái",
     cell: ({ row }) => (
-      <div>{getVietnameseDishStatus(row.getValue("status"))}</div>
+      <div>{getVietnameseTableStatus(row.getValue("status"))}</div>
     ),
+  },
+  {
+    accessorKey: "token",
+    header: "QR Code",
+    cell: ({ row }) => <div>{row.getValue("number")}</div>,
   },
   {
     id: "actions",
     enableHiding: false,
     cell: function Actions({ row }) {
-      const { setDishIdToEdit, setDishToDelete } = useContext(DishTableContext);
+      const { setTableIdToEdit, setTableToDelete } =
+        useContext(TableTableContext);
 
-      const openEditDish = () => {
-        setDishIdToEdit(row.original.id);
+      const openEditTable = () => {
+        setTableIdToEdit(row.original.number);
       };
 
-      const openDeleteDish = () => {
-        setDishToDelete(row.original);
+      const openDeleteTable = () => {
+        setTableToDelete(row.original);
       };
 
       return (
@@ -135,8 +110,8 @@ const columns: ColumnDef<Dish>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={openEditDish}>Sửa</DropdownMenuItem>
-            <DropdownMenuItem onClick={openDeleteDish}>Xóa</DropdownMenuItem>
+            <DropdownMenuItem onClick={openEditTable}>Sửa</DropdownMenuItem>
+            <DropdownMenuItem onClick={openDeleteTable}>Xóa</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -144,26 +119,28 @@ const columns: ColumnDef<Dish>[] = [
   },
 ];
 
-export default function DishTable() {
+export default function TableTable() {
   const searchParam = useSearchParams();
-  const page = Number(searchParam.get(SearchParamKey.Page) ?? 1);
-  const limit = Number(searchParam.get(SearchParamKey.Limit) ?? PAGE_SIZE);
+  const page = Number(searchParam.get("page") || 1);
   const pageIndex = page - 1;
 
-  const [dishIdToEdit, setDishIdToEdit] = useState<number | undefined>();
-  const [dishToDelete, setDishToDelete] = useState<Dish | null>(null);
+  const [tableIdToEdit, setTableIdToEdit] = useState<number | undefined>();
+  const [tableToDelete, setTableToDelete] = useState<TableType | null>(null);
 
-  const dishListQuery = useDishListQuery({ page, limit });
-  const { items, totalItem, totalPage } =
-    getTablePaginatedQueryData(dishListQuery);
+  const tableListQuery = useTableListQuery();
+  const data = getTableQueryData(tableListQuery);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const [pagination, setPagination] = useState({
+    pageIndex,
+    pageSize: PAGE_SIZE,
+  });
 
   const table = useReactTable({
-    data: items,
+    data,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -173,46 +150,49 @@ export default function DishTable() {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    // The next 2 lines are important for manual pagination
-    manualPagination: true,
-    pageCount: totalPage,
+    onPaginationChange: setPagination,
     autoResetPageIndex: false,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
-      // The table's pagination state should be driven by the URL params
-      pagination: {
-        pageIndex,
-        pageSize: PAGE_SIZE,
-      },
+      pagination,
     },
   });
 
+  useEffect(() => {
+    table.setPagination({
+      pageIndex,
+      pageSize: PAGE_SIZE,
+    });
+  }, [table, pageIndex]);
+
   return (
-    <DishTableContext.Provider
+    <TableTableContext.Provider
       value={{
-        dishIdToEdit,
-        setDishIdToEdit,
-        dishToDelete,
-        setDishToDelete,
+        tableIdToEdit,
+        setTableIdToEdit,
+        tableToDelete,
+        setTableToDelete,
       }}
     >
       <div className="w-full">
-        <EditDish id={dishIdToEdit} setId={setDishIdToEdit} />
-        <DeleteDish dish={dishToDelete} setDish={setDishToDelete} />
+        <EditTable id={tableIdToEdit} setId={setTableIdToEdit} />
+        <DeleteTable table={tableToDelete} setTable={setTableToDelete} />
         <div className="flex items-center py-4">
           <Input
-            placeholder="Lọc tên"
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            placeholder="Lọc số bàn"
+            value={
+              (table.getColumn("number")?.getFilterValue() as string) ?? ""
+            }
             onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
+              table.getColumn("number")?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
           <div className="ml-auto flex items-center gap-2">
-            <AddDish />
+            <AddTable />
           </div>
         </div>
         <div className="rounded-md border">
@@ -269,18 +249,18 @@ export default function DishTable() {
           <div className="text-xs text-muted-foreground py-4 flex-1 ">
             Hiển thị{" "}
             <strong>{table.getPaginationRowModel().rows.length}</strong> trong{" "}
-            <strong>{totalItem}</strong> kết quả
+            <strong>{data.length}</strong> kết quả
           </div>
           <div>
             <AutoPagination
               page={table.getState().pagination.pageIndex + 1}
-              totalPage={totalPage}
+              totalPage={table.getPageCount()}
               limit={PAGE_SIZE}
-              pathname="/manage/dishes"
+              pathname="/manage/tables"
             />
           </div>
         </div>
       </div>
-    </DishTableContext.Provider>
+    </TableTableContext.Provider>
   );
 }

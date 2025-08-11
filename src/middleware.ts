@@ -7,6 +7,7 @@ const PRIVATE_ROUTES = [
   "/manage/dashboard",
   "/manage/accounts",
   "/manage/dishes",
+  "manage/tables",
   "/manage/settings",
   "/settings",
   "/orders",

@@ -1,22 +1,17 @@
 import z from "zod";
 
-export const registerPasswordSchema = z.string().min(6, {
-  error: "Mật khẩu có ít nhất 6 ký tự",
-});
-
-export const loginPasswordSchema = z.string().min(6, {
-  error: "Mật khẩu có ít nhất 6 ký tự",
-});
-
-export const confirmPasswordSchema = z.string().min(1, {
-  error: "Mật khẩu xác nhận không được để trống",
-});
+import {
+  accoutnNameSchema,
+  confirmPasswordSchema,
+  emailSchema,
+  passwordSchema,
+} from "@/schemas/common";
 
 export const registerRequestSchema = z
   .object({
-    name: z.string().trim().min(2).max(256),
-    email: z.email(),
-    password: registerPasswordSchema,
+    name: accoutnNameSchema,
+    email: emailSchema,
+    password: passwordSchema,
     confirmPassword: confirmPasswordSchema,
   })
   .strict()
@@ -27,7 +22,7 @@ export const registerRequestSchema = z
 
 export const loginRequestSchema = z
   .object({
-    email: z.email(),
-    password: loginPasswordSchema,
+    email: emailSchema,
+    password: passwordSchema,
   })
   .strict();

@@ -2,44 +2,41 @@ import z from "zod";
 
 import { TableStatusValues } from "@/lib/constants";
 
-export const CreateTableBody = z.object({
-  number: z.coerce.number().positive(),
-  capacity: z.coerce.number().positive(),
-  status: z.enum(TableStatusValues).optional(),
-});
+const numberSchema = z.transform(Number).pipe(
+  z.number({ error: "Số bàn không hợp lệ." }).positive({
+    error: "Số bàn không hợp lệ.",
+  }),
+);
 
-export type CreateTableBodyType = z.TypeOf<typeof CreateTableBody>;
+const capacitySchema = z.transform(Number).pipe(
+  z
+    .number({
+      error: "Sức chứa không hợp lệ.",
+    })
+    .positive({
+      message: "Sức chứa không được nhỏ hơn 1.",
+    }),
+);
 
-export const TableSchema = z.object({
-  number: z.coerce.number(),
-  capacity: z.coerce.number(),
-  status: z.enum(TableStatusValues),
+const statusSchema = z.enum(TableStatusValues);
+
+export const tableSchema = z.object({
+  number: numberSchema,
+  capacity: capacitySchema,
+  status: statusSchema,
   token: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
 
-export const TableRes = z.object({
-  data: TableSchema,
-  message: z.string(),
+export const createTableSchema = z.object({
+  number: numberSchema,
+  capacity: capacitySchema,
+  status: statusSchema.optional(),
 });
 
-export type TableResType = z.TypeOf<typeof TableRes>;
-
-export const TableListRes = z.object({
-  data: z.array(TableSchema),
-  message: z.string(),
-});
-
-export type TableListResType = z.TypeOf<typeof TableListRes>;
-
-export const UpdateTableBody = z.object({
+export const updateTableSchema = z.object({
   changeToken: z.boolean(),
-  capacity: z.coerce.number().positive(),
-  status: z.enum(TableStatusValues).optional(),
+  capacity: capacitySchema,
+  status: statusSchema.optional(),
 });
-export type UpdateTableBodyType = z.TypeOf<typeof UpdateTableBody>;
-export const TableParams = z.object({
-  number: z.coerce.number(),
-});
-export type TableParamsType = z.TypeOf<typeof TableParams>;

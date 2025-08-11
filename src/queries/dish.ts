@@ -3,20 +3,29 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createDishAction,
   deleteDishAction,
+  getDishDetailAction,
   getDishListAction,
   updateDishAction,
 } from "@/actions/dish";
 import { UpdateDishReqBody } from "@/types/dish";
+import { PaginationParams } from "@/types/others";
 
 const QueryKeys = {
   Dishes: "dishes",
 };
 
-export function useDishListQuery() {
-  console.log("fecth");
+export function useDishListQuery(params: PaginationParams) {
   return useQuery({
-    queryKey: [QueryKeys.Dishes],
-    queryFn: getDishListAction,
+    queryKey: [QueryKeys.Dishes, params],
+    queryFn: async () => getDishListAction(params),
+  });
+}
+
+export function useDishQuery(id: number | undefined) {
+  return useQuery({
+    queryKey: [QueryKeys.Dishes, id],
+    queryFn: () => getDishDetailAction(id!),
+    enabled: id !== undefined && id !== null,
   });
 }
 

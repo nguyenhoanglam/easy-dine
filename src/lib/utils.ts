@@ -1,3 +1,4 @@
+import { UseQueryResult } from "@tanstack/react-query";
 import { type ClassValue, clsx } from "clsx";
 import currency from "currency.js";
 import jwt from "jsonwebtoken";
@@ -14,7 +15,7 @@ import {
 } from "@/lib/constants";
 import { env } from "@/lib/env";
 import { HttpError, HttpResponse } from "@/types/http";
-import { PageMetadata } from "@/types/others";
+import { PageMetadata, PaginatedData } from "@/types/others";
 
 /*
  * UI
@@ -89,13 +90,47 @@ export function createMetadata({
   };
 }
 
-export async function formatCurrency(value: number) {
+export function formatCurrency(value: number) {
   return currency(value, {
     pattern: "# !",
     decimal: ".",
     precision: 0,
     symbol: "đ",
   }).format();
+}
+
+export function getTableQueryData<T>(
+  queryResult: UseQueryResult<HttpResponse<T[]>>,
+): T[] {
+  if (queryResult.data && queryResult.data.ok) {
+    return queryResult.data.data;
+  }
+
+  return [];
+}
+
+export function getTablePaginatedQueryData<T>(
+  queryResult: UseQueryResult<HttpResponse<PaginatedData<T>>>,
+): PaginatedData<T> {
+  if (queryResult.data && queryResult.data.ok) {
+    const { items, limit, page, totalItem, totalPage } = queryResult.data.data;
+
+    return {
+      items,
+      limit,
+      page,
+      totalItem,
+      totalPage,
+    };
+  }
+
+  return {
+    items: [],
+    limit: 0,
+    page: 0,
+    totalItem: 0,
+    totalPage: 0,
+  };
 }
 
 export function getVietnameseDishStatus(

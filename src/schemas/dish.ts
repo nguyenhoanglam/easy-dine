@@ -1,70 +1,39 @@
 import z from "zod";
 
 import { DishStatusValues } from "@/lib/constants";
+import { dateSchema, priceSchema } from "@/schemas/common";
 
-const priceSchema = z.preprocess(
-  (value: number) => {
-    const trimmedValue = String(value)?.trim();
+const nameSchema = z
+  .string()
+  .trim()
+  .min(2, { error: "Tên món ăn phải có ít nhất 2 ký tự." })
+  .max(256, { error: "Tên món ăn không được quá 256 ký tự." });
 
-    if (trimmedValue === "") {
-      return "$";
-    }
+const imageSchema = z.url({ error: "Ảnh món ăn không hợp lệ." });
 
-    return Number(trimmedValue);
-  },
-  z
-    .number({
-      error: "Giá món ăn không được để trống",
-    })
-    .min(0, {
-      error: "Giá món ăn không hợp lệ.",
-    }),
-);
+const descriptionSchema = z
+  .string()
+  .trim()
+  .min(1, { error: "Mô tả món ăn không được để trống." })
+  .max(10000, { error: "Mô tả món ăn không được quá 10000 ký tự." });
 
 export const dishSchema = z.object({
   id: z.number(),
-  name: z.string(),
+  name: nameSchema,
   price: priceSchema,
-  description: z.string(),
-  image: z.string(),
+  description: descriptionSchema,
+  image: imageSchema,
   status: z.enum(DishStatusValues),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: dateSchema,
+  updatedAt: dateSchema,
 });
 
 export const createDishSchema = z.object({
-  name: z
-    .string()
-    .min(1, {
-      error: "Tên món ăn không được để trống.",
-    })
-    .max(256, {
-      error: "Tên món ăn không được vượt quá 256 ký tự.",
-    }),
+  name: nameSchema,
   price: priceSchema,
-  description: z.string().max(10000),
-  image: z.url(),
+  description: descriptionSchema,
+  image: imageSchema,
   status: z.enum(DishStatusValues).optional(),
 });
 
-export const dishQueryParamsSchema = z.object({
-  id: z.coerce.number(),
-});
-
 export const updateDishSchema = createDishSchema;
-
-export const dishPaginationParamsSchema = z.object({
-  page: z.coerce.number().positive().lte(10000).default(1),
-  limit: z.coerce.number().positive().lte(10000).default(10),
-});
-
-export const DishListWithPaginationRes = z.object({
-  data: z.object({
-    totalItem: z.number(),
-    totalPage: z.number(),
-    page: z.number(),
-    limit: z.number(),
-    items: z.array(dishSchema),
-  }),
-  message: z.string(),
-});

@@ -48,7 +48,6 @@ export function useChangePasswordMutation() {
 }
 
 export function useAccountListQuery() {
-  console.log("fecth");
   return useQuery({
     queryKey: [QueryKeys.Accounts],
     queryFn: getAccountListAction,

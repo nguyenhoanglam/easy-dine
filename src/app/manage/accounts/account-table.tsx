@@ -39,6 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getTableQueryData } from "@/lib/utils";
 import { useAccountListQuery } from "@/queries/account";
 import { Account } from "@/types/account";
 
@@ -143,8 +144,9 @@ export default function AccountTable() {
   const [employeeToDelete, setEmployeeToDelete] = useState<Account | null>(
     null,
   );
+
   const accountListQuery = useAccountListQuery();
-  const data = accountListQuery.data?.ok ? accountListQuery.data.data : [];
+  const data = getTableQueryData(accountListQuery);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -274,7 +276,8 @@ export default function AccountTable() {
           <div>
             <AutoPagination
               page={table.getState().pagination.pageIndex + 1}
-              pageSize={table.getPageCount()}
+              totalPage={table.getPageCount()}
+              limit={PAGE_SIZE}
               pathname="/manage/accounts"
             />
           </div>

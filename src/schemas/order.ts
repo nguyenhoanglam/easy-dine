@@ -2,7 +2,7 @@ import z from "zod";
 
 import { DishStatusValues, OrderStatusValues } from "@/lib/constants";
 import { accountSchema } from "@/schemas/account";
-import { TableSchema } from "@/schemas/table";
+import { tableSchema } from "@/schemas/table";
 
 const DishSnapshotSchema = z.object({
   id: z.number(),
@@ -76,7 +76,7 @@ export type GetOrdersResType = z.TypeOf<typeof GetOrdersRes>;
 export const GetOrderDetailRes = z.object({
   message: z.string(),
   data: OrderSchema.extend({
-    table: TableSchema,
+    table: tableSchema,
   }),
 });
 

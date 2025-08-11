@@ -55,10 +55,8 @@ export default function DeleteEmployeeAccount({
           <AlertDialogTitle>Xóa nhân viên?</AlertDialogTitle>
           <AlertDialogDescription>
             Tài khoản{" "}
-            <span className="bg-foreground text-primary-foreground rounded px-1">
-              {employee?.name}
-            </span>{" "}
-            sẽ bị xóa vĩnh viễn
+            <strong className="text-foreground">{employee?.name}</strong> sẽ bị
+            xóa vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

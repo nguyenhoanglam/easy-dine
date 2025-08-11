@@ -17,6 +17,7 @@ export const SearchParamKey = {
   RefreshToken: "refresh_token",
   ClearTokens: "clear_tokens",
   Page: "page",
+  Limit: "limit",
 };
 
 export const TokenType = {

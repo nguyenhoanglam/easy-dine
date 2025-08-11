@@ -31,11 +31,17 @@ Với RANGE = 2 áp dụng cho khoảng cách đầu, cuối và xung quanh curr
 
 interface Props {
   page: number;
-  pageSize: number;
+  totalPage: number;
+  limit: number;
   pathname: string;
 }
 
-export default function AutoPagination({ page, pageSize, pathname }: Props) {
+export default function AutoPagination({
+  page,
+  totalPage,
+  limit,
+  pathname,
+}: Props) {
   const renderPagination = () => {
     let dotAfter = false;
     let dotBefore = false;
@@ -66,7 +72,7 @@ export default function AutoPagination({ page, pageSize, pathname }: Props) {
       return null;
     };
 
-    return Array(pageSize)
+    return Array(totalPage)
       .fill(0)
       .map((_, index) => {
         const pageNumber = index + 1;
@@ -75,20 +81,20 @@ export default function AutoPagination({ page, pageSize, pathname }: Props) {
         if (
           page <= RANGE * 2 + 1 &&
           pageNumber > page + RANGE &&
-          pageNumber < pageSize - RANGE + 1
+          pageNumber < totalPage - RANGE + 1
         ) {
           return renderDotAfter();
-        } else if (page > RANGE * 2 + 1 && page < pageSize - RANGE * 2) {
+        } else if (page > RANGE * 2 + 1 && page < totalPage - RANGE * 2) {
           if (pageNumber < page - RANGE && pageNumber > RANGE) {
             return renderDotBefore();
           } else if (
             pageNumber > page + RANGE &&
-            pageNumber < pageSize - RANGE + 1
+            pageNumber < totalPage - RANGE + 1
           ) {
             return renderDotAfter();
           }
         } else if (
-          page >= pageSize - RANGE * 2 &&
+          page >= totalPage - RANGE * 2 &&
           pageNumber > RANGE &&
           pageNumber < page - RANGE
         ) {
@@ -98,7 +104,7 @@ export default function AutoPagination({ page, pageSize, pathname }: Props) {
         return (
           <PaginationItem key={index}>
             <PaginationLink
-              href={{ pathname, query: { page: pageNumber } }}
+              href={{ pathname, query: { page: pageNumber, limit } }}
               isActive={pageNumber === page}
             >
               {pageNumber}
@@ -113,8 +119,11 @@ export default function AutoPagination({ page, pageSize, pathname }: Props) {
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            href={{ pathname, query: { page: page - 1 } }}
-            className={cn({ "cursor-not-allowed": page === 1 })}
+            href={{ pathname, query: { page: page - 1, limit } }}
+            className={cn({
+              "cursor-not-allowed opacity-50 pointer-events-none": page === 1,
+            })}
+            aria-disabled={page === 1}
             onClick={(e) => {
               if (page === 1) {
                 e.preventDefault();
@@ -125,10 +134,14 @@ export default function AutoPagination({ page, pageSize, pathname }: Props) {
         {renderPagination()}
         <PaginationItem>
           <PaginationNext
-            href={{ pathname, query: { page: page + 1 } }}
-            className={cn({ "cursor-not-allowed": page === pageSize })}
+            href={{ pathname, query: { page: page + 1, limit } }}
+            className={cn({
+              "cursor-not-allowed opacity-50 pointer-events-none":
+                page === totalPage,
+            })}
+            aria-disabled={page === totalPage}
             onClick={(e) => {
-              if (page === pageSize) {
+              if (page === totalPage) {
                 e.preventDefault();
               }
             }}

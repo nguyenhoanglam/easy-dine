@@ -1,11 +1,11 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Upload } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { Button } from "@/components";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -32,9 +32,23 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { DishStatus, DishStatusValues } from "@/lib/constants";
-import { getVietnameseDishStatus } from "@/lib/utils";
+import {
+  getVietnameseDishStatus,
+  showResponseError,
+  showResponseSuccess,
+} from "@/lib/utils";
+import { useDishQuery, useUpdateDishMutation } from "@/queries/dish";
+import { useUploadImageMutation } from "@/queries/media";
 import { updateDishSchema } from "@/schemas/dish";
 import { UpdateDishReqBody } from "@/types/dish";
+
+const DEFAULT_VALUES: UpdateDishReqBody = {
+  name: "",
+  description: "",
+  price: 0,
+  image: "",
+  status: DishStatus.Unavailable,
+};
 
 interface Props {
   id?: number | undefined;
@@ -43,32 +57,97 @@ interface Props {
 }
 
 export default function EditDish({ id, setId, onSubmitSuccess }: Props) {
-  const [file, setFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+
+  const dishQuery = useDishQuery(id);
+  const uploadImageMutation = useUploadImageMutation();
+  const updateDishMutation = useUpdateDishMutation();
 
   const form = useForm<UpdateDishReqBody>({
     resolver: zodResolver(updateDishSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      price: 0,
-      image: "",
-      status: DishStatus.Unavailable,
-    },
+    defaultValues: DEFAULT_VALUES,
   });
   const image = form.watch("image");
   const name = form.watch("name");
 
-  const previewDishImage = useMemo(() => {
-    return file ? URL.createObjectURL(file) : image;
-  }, [file, image]);
+  const previewImage = useMemo(() => {
+    if (imageFile) {
+      return URL.createObjectURL(imageFile);
+    }
+
+    return image || undefined;
+  }, [imageFile, image]);
+
+  useEffect(() => {
+    if (dishQuery.data) {
+      const response = dishQuery.data;
+
+      if (!response.ok) {
+        showResponseError(response);
+        return;
+      }
+
+      const { name, description, price, image, status } = response.data;
+      form.reset({
+        name,
+        description,
+        price,
+        image,
+        status: status || DishStatus.Unavailable,
+      });
+    }
+  }, [dishQuery.data, form]);
+
+  const reset = () => {
+    setId(undefined);
+    setImageFile(null);
+    form.reset(DEFAULT_VALUES);
+  };
+
+  const onSubmit = async (data: UpdateDishReqBody) => {
+    if (updateDishMutation.isPending) {
+      return;
+    }
+
+    const body: UpdateDishReqBody = data;
+
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("file", imageFile);
+
+      const uploadImageResponse =
+        await uploadImageMutation.mutateAsync(formData);
+
+      if (!uploadImageResponse.ok) {
+        showResponseError(uploadImageResponse);
+        return;
+      }
+
+      body.image = uploadImageResponse.data;
+    }
+
+    const updateDishResponse = await updateDishMutation.mutateAsync({
+      id: id!,
+      body,
+    });
+
+    if (!updateDishResponse.ok) {
+      showResponseError(updateDishResponse, { setFormError: form.setError });
+      return;
+    }
+
+    reset();
+    onSubmitSuccess?.();
+    showResponseSuccess(updateDishResponse);
+  };
 
   return (
     <Dialog
       open={Boolean(id)}
       onOpenChange={(value) => {
         if (!value) {
-          setId(undefined);
+          reset();
         }
       }}
     >
@@ -84,6 +163,8 @@ export default function EditDish({ id, setId, onSubmitSuccess }: Props) {
             noValidate
             className="grid auto-rows-max items-start gap-4 md:gap-8"
             id="edit-dish-form"
+            onReset={reset}
+            onSubmit={form.handleSubmit(onSubmit)}
           >
             <div className="grid gap-4 py-4">
               <FormField
@@ -93,7 +174,7 @@ export default function EditDish({ id, setId, onSubmitSuccess }: Props) {
                   <FormItem>
                     <div className="flex gap-2 items-start justify-start">
                       <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
-                        <AvatarImage src={previewDishImage} />
+                        <AvatarImage src={previewImage} />
                         <AvatarFallback className="rounded-none">
                           {name || "Avatar"}
                         </AvatarFallback>
@@ -105,9 +186,9 @@ export default function EditDish({ id, setId, onSubmitSuccess }: Props) {
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            setFile(file);
+                            setImageFile(file);
                             field.onChange(
-                              "http://localhost:3000/" + file.name,
+                              "http://localhost:4000/" + file.name,
                             );
                           }
                         }}
@@ -190,6 +271,7 @@ export default function EditDish({ id, setId, onSubmitSuccess }: Props) {
                       <div className="col-span-3 w-full space-y-2">
                         <Select
                           onValueChange={field.onChange}
+                          value={field.value}
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -216,7 +298,11 @@ export default function EditDish({ id, setId, onSubmitSuccess }: Props) {
           </form>
         </Form>
         <DialogFooter>
-          <Button type="submit" form="edit-dish-form">
+          <Button
+            type="submit"
+            form="edit-dish-form"
+            loading={form.formState.isSubmitting}
+          >
             Lưu
           </Button>
         </DialogFooter>
