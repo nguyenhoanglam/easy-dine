@@ -1,10 +1,11 @@
 import { refreshTokenAction } from "@/actions/auth";
+import { guestRefreshTokenAction } from "@/actions/guest";
 import {
   getLocalStorage,
   removeAuthLocalStorage,
   setAuthLocalStorage,
 } from "@/helpers/storage";
-import { decodeJWT } from "@/lib/utils";
+import { decodeToken } from "@/lib/utils";
 
 type RefreshTokenActionPromise = ReturnType<typeof refreshTokenAction> | null;
 
@@ -25,8 +26,8 @@ export async function checkAndRefreshToken({
       return;
     }
 
-    const decodedAccessToken = decodeJWT(accessToken)!;
-    const decodedRefreshToken = decodeJWT(refreshToken)!;
+    const decodedAccessToken = decodeToken(accessToken)!;
+    const decodedRefreshToken = decodeToken(refreshToken)!;
     const now = Date.now() / 1000 - 1; // Subtract 1 second to ensure the token is deleted before calling refresh token API
     // If the access token is expired, do not refresh
     if (now >= decodedRefreshToken.exp) {
@@ -35,6 +36,7 @@ export async function checkAndRefreshToken({
 
       return;
     }
+
     if (
       decodedAccessToken.exp - now <
       (decodedAccessToken.exp - decodedAccessToken.iat) / 3
@@ -46,7 +48,10 @@ export async function checkAndRefreshToken({
       if (refreshTokenActionPromise) {
         action = refreshTokenActionPromise;
       } else {
-        action = refreshTokenAction();
+        action =
+          decodedRefreshToken.role === "Guest"
+            ? guestRefreshTokenAction()
+            : refreshTokenAction();
         refreshTokenActionPromise = action;
       }
 

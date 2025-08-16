@@ -5,6 +5,7 @@ import {
   deleteDishAction,
   getDishDetailAction,
   getDishListAction,
+  getPaginatedDishListAction,
   updateDishAction,
 } from "@/actions/dish";
 import { UpdateDishReqBody } from "@/types/dish";
@@ -14,10 +15,17 @@ const QueryKeys = {
   Dishes: "dishes",
 };
 
-export function useDishListQuery(params: PaginationParams) {
+export function useDishListQuery() {
+  return useQuery({
+    queryKey: [QueryKeys.Dishes],
+    queryFn: getDishListAction,
+  });
+}
+
+export function usePaginatedDishListQuery(params: PaginationParams) {
   return useQuery({
     queryKey: [QueryKeys.Dishes, params],
-    queryFn: async () => getDishListAction(params),
+    queryFn: async () => getPaginatedDishListAction(params),
   });
 }
 
@@ -35,10 +43,7 @@ export function useCreateDishMutation() {
   return useMutation({
     mutationFn: createDishAction,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Dishes],
-        exact: true,
-      });
+      queryClient.invalidateQueries({ queryKey: [QueryKeys.Dishes] });
     },
   });
 }
@@ -50,10 +55,7 @@ export function useUpdateDishMutation() {
     mutationFn: async ({ id, body }: { id: number; body: UpdateDishReqBody }) =>
       updateDishAction(id, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Dishes],
-        exact: true,
-      });
+      queryClient.invalidateQueries({ queryKey: [QueryKeys.Dishes] });
     },
   });
 }
@@ -64,10 +66,7 @@ export const useDeleteDishMutation = () => {
   return useMutation({
     mutationFn: async (id: number) => deleteDishAction(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Dishes],
-        exact: true,
-      });
+      queryClient.invalidateQueries({ queryKey: [QueryKeys.Dishes] });
     },
   });
 };

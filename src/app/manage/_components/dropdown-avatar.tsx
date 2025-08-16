@@ -19,7 +19,7 @@ import { useLogoutMutation } from "@/queries/auth";
 
 export default function DropdownAvatar() {
   const router = useRouter();
-  const { setLoggedIn } = useAuthContext();
+  const { setRole } = useAuthContext();
   const logoutMutation = useLogoutMutation();
   const profileQuery = useProfileQuery();
 
@@ -30,7 +30,7 @@ export default function DropdownAvatar() {
 
     await logoutMutation.mutateAsync();
 
-    setLoggedIn(false);
+    setRole(null);
     router.push("/");
   };
 

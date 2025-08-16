@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/card";
 
 export default function DishesPage() {
-  console.log("Page render at", Date.now());
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
       <div className="space-y-2">

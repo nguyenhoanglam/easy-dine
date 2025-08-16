@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   description: "Quét mã và gọi món tại bàn.",
 };
 
-export default function RootLayout({
+export default function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;

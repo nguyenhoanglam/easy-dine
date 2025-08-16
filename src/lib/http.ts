@@ -40,7 +40,7 @@ class HttpClient {
   }
 
   private async getHeaders(options: HttpRequestOptions) {
-    const { body, headers: _headers, withAuth = true } = options;
+    const { body, headers: _headers, useAuth = true } = options;
 
     const headers: Record<string, unknown> = {
       ..._headers,
@@ -50,7 +50,7 @@ class HttpClient {
       headers["Content-Type"] = "application/json";
     }
 
-    if (withAuth) {
+    if (useAuth) {
       const accessToken = await getCookie("access_token");
 
       if (accessToken) {
@@ -146,7 +146,7 @@ class HttpClient {
     response: Response,
     options: HttpRequestOptions,
   ): Promise<HttpResponse<T, E>> {
-    const { withAuth = true } = options;
+    const { useAuth = true } = options;
 
     let data: unknown;
 
@@ -159,21 +159,20 @@ class HttpClient {
         message: "Invalid response format",
       };
     }
-    console.log(1111);
-    console.log(response);
+
     if (!response.ok) {
       // Don't redirect for `/auth/logout` endpoint or public endpoints
       // This allows request caller can handle the response and implement logout fllow
       if (response.status === HttpStatus.Unauthorized) {
         const { pathname } = new URL(response.url);
 
-        this.log({
-          method: options.method,
-          endpoint: response.url,
-          status: response.status,
-        });
+        // this.log({
+        //   method: options.method,
+        //   endpoint: response.url,
+        //   status: response.status,
+        // });
 
-        if (!IGNORE_UNAUTHORIZED_PATHS.includes(pathname) && withAuth) {
+        if (!IGNORE_UNAUTHORIZED_PATHS.includes(pathname) && useAuth) {
           throw new Error("UNAUTHORIZED");
         }
       }
@@ -253,11 +252,11 @@ class HttpClient {
         const fetchResponse = await fetch(url, requestConfig);
         const response = await this.parseResponse<T, E>(fetchResponse, options);
 
-        this.log({
-          method: requestConfig.method,
-          endpoint: url,
-          status: fetchResponse.status,
-        });
+        // this.log({
+        //   method: requestConfig.method,
+        //   endpoint: url,
+        //   status: fetchResponse.status,
+        // });
 
         return response;
       } catch (error: unknown) {

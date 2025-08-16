@@ -1,52 +1,34 @@
 import z from "zod";
 
-import { Role } from "@/lib/constants";
-import { OrderSchema } from "@/schemas/order";
+const nameSchema = z
+  .string()
+  .trim()
+  .min(2, {
+    error: "Tên khách hàng phải có ít nhất 2 ký tự.",
+  })
+  .max(50, {
+    error: "Tên khách hàng không được nhiều hơn 50 ký tự.",
+  });
 
-export const GuestLoginBody = z
+export const guestLoginSchema = z
   .object({
-    name: z.string().min(2).max(50),
-    tableNumber: z.number(),
-    token: z.string(),
+    name: nameSchema,
+    tableNumber: z
+      .number({
+        error: "Số bàn không hợp lệ.",
+      })
+      .min(1, {
+        error: "Số bàn không hợp lệ",
+      }),
+    token: z.string().min(1, {
+      error: "Token không được để trống.",
+    }),
   })
   .strict();
 
-export type GuestLoginBodyType = z.TypeOf<typeof GuestLoginBody>;
-
-export const GuestLoginRes = z.object({
-  data: z.object({
-    accessToken: z.string(),
-    refreshToken: z.string(),
-    guest: z.object({
-      id: z.number(),
-      name: z.string(),
-      role: z.enum([Role.Guest]),
-      tableNumber: z.number().nullable(),
-      createdAt: z.date(),
-      updatedAt: z.date(),
-    }),
-  }),
-  message: z.string(),
-});
-
-export type GuestLoginResType = z.TypeOf<typeof GuestLoginRes>;
-
-export const GuestCreateOrdersBody = z.array(
+export const createGuestOrdersSchema = z.array(
   z.object({
     dishId: z.number(),
     quantity: z.number(),
   }),
 );
-
-export type GuestCreateOrdersBodyType = z.TypeOf<typeof GuestCreateOrdersBody>;
-
-export const GuestCreateOrdersRes = z.object({
-  message: z.string(),
-  data: z.array(OrderSchema),
-});
-
-export type GuestCreateOrdersResType = z.TypeOf<typeof GuestCreateOrdersRes>;
-
-export const GuestGetOrdersRes = GuestCreateOrdersRes;
-
-export type GuestGetOrdersResType = z.TypeOf<typeof GuestGetOrdersRes>;

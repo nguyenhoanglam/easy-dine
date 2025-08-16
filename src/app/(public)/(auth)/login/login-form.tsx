@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components";
@@ -24,9 +24,9 @@ import { useLoginMutation } from "@/queries/auth";
 import { loginRequestSchema } from "@/schemas/auth";
 import { LoginReqBody } from "@/types/auth";
 
-export default function LoginForm() {
+function Login() {
   const router = useRouter();
-  const { setLoggedIn } = useAuthContext();
+  const { setRole } = useAuthContext();
   const loginMutation = useLoginMutation();
   const searchParams = useSearchParams();
 
@@ -42,9 +42,9 @@ export default function LoginForm() {
 
   useEffect(() => {
     if (clearTokens === "true") {
-      setLoggedIn(false);
+      setRole(null);
     }
-  }, [clearTokens, setLoggedIn]);
+  }, [clearTokens, setRole]);
 
   const onSubmit = async (data: LoginReqBody) => {
     const response = await loginMutation.mutateAsync(data);
@@ -56,8 +56,8 @@ export default function LoginForm() {
 
     const { accessToken, refreshToken, account } = response.data;
     setAuthLocalStorage({ accessToken, refreshToken, account });
+    setRole(account.role);
     showResponseSuccess(response);
-    setLoggedIn(true);
     router.push("/manage/dashboard");
   };
 
@@ -137,5 +137,13 @@ export default function LoginForm() {
         </Form>
       </CardContent>
     </Card>
+  );
+}
+
+export default function LoginForm() {
+  return (
+    <Suspense>
+      <Login />
+    </Suspense>
   );
 }

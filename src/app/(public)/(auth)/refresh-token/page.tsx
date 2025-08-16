@@ -1,14 +1,14 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 
 import { checkAndRefreshToken } from "@/helpers/auth";
 import { getLocalStorage, removeAuthLocalStorage } from "@/helpers/storage";
 import { SearchParamKey } from "@/lib/constants";
 import { useLogoutMutation } from "@/queries/auth";
 
-export default function RefreshTokenPage() {
+function RefreshToken() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { mutateAsync } = useLogoutMutation();
@@ -33,4 +33,12 @@ export default function RefreshTokenPage() {
   }, [mutateAsync, redirectPathname, refreshToken, router]);
 
   return <div>Vui lòng chờ...</div>;
+}
+
+export default function RefreshTokenPage() {
+  return (
+    <Suspense>
+      <RefreshToken />
+    </Suspense>
+  );
 }

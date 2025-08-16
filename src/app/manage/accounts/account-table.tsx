@@ -95,6 +95,15 @@ const columns: ColumnDef<Account>[] = [
       );
     },
     cell: ({ row }) => <div>{row.getValue("email")}</div>,
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue || filterValue.trim() === "") {
+        return true;
+      }
+
+      return String(row.getValue(columnId))
+        .toLowerCase()
+        .includes(filterValue.toLowerCase());
+    },
   },
   {
     id: "actions",
@@ -277,7 +286,6 @@ export default function AccountTable() {
             <AutoPagination
               page={table.getState().pagination.pageIndex + 1}
               totalPage={table.getPageCount()}
-              limit={PAGE_SIZE}
               pathname="/manage/accounts"
             />
           </div>

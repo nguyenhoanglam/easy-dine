@@ -18,7 +18,7 @@ export async function loginAction(body: LoginReqBody) {
     `${basePath}/login`,
     body,
     {
-      withAuth: false,
+      useAuth: false,
     },
   );
 
@@ -51,6 +51,7 @@ export async function refreshTokenAction() {
   const response = await httpClient.post<RefreshTokenResData>(
     `${basePath}/refresh-token`,
     body,
+    { useAuth: false },
   );
 
   if (response.ok) {

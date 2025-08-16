@@ -1,4 +1,5 @@
 "use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
@@ -40,7 +41,7 @@ import { createTableSchema } from "@/schemas/table";
 import { CreateTableReqBody } from "@/types/table";
 
 export default function AddTable() {
-  const [isOpen, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const createTableMutation = useCreateTableMutation();
 
@@ -71,7 +72,7 @@ export default function AddTable() {
 
   return (
     <Dialog
-      open={isOpen}
+      open={open}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
           reset();

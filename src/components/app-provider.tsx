@@ -12,6 +12,8 @@ import {
 
 import RefreshToken from "@/components/refresh-token";
 import { getLocalStorage, removeAuthLocalStorage } from "@/helpers/storage";
+import { decodeToken } from "@/lib/utils";
+import { Role } from "@/types/others";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,13 +25,13 @@ const queryClient = new QueryClient({
 });
 
 type AuthContextType = {
-  isLoggedIn: boolean;
-  setLoggedIn: (isLoggedIn: boolean) => void;
+  role: Role | null;
+  setRole: (role: Role | null) => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
-  isLoggedIn: false,
-  setLoggedIn: () => {},
+  role: null,
+  setRole: () => {},
 });
 
 export const useAuthContext = () => {
@@ -42,25 +44,30 @@ export const useAuthContext = () => {
 };
 
 export default function AppProvider({ children }: React.PropsWithChildren) {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+  const [role, setUserRole] = useState<Role | null>(() => {
     const refreshToken = getLocalStorage("refresh_token");
-    return !!refreshToken;
+
+    if (!refreshToken) {
+      return null;
+    }
+
+    return decodeToken(refreshToken)?.role || null;
   });
 
-  const setLoggedIn = useCallback((value: boolean) => {
-    setIsLoggedIn(value);
+  const setRole = useCallback((role: Role | null) => {
+    setUserRole(role);
 
-    if (!value) {
+    if (!role) {
       removeAuthLocalStorage();
     }
   }, []);
 
   const authContextValue = useMemo(() => {
     return {
-      isLoggedIn,
-      setLoggedIn,
+      role,
+      setRole,
     };
-  }, [isLoggedIn, setLoggedIn]);
+  }, [role, setRole]);
 
   return (
     <AuthContext.Provider value={authContextValue}>

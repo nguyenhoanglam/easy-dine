@@ -1,3 +1,5 @@
+import { UrlObject } from "url";
+
 import {
   Pagination,
   PaginationContent,
@@ -29,10 +31,27 @@ Với RANGE = 2 áp dụng cho khoảng cách đầu, cuối và xung quanh curr
 1 2 ... 18 19 [20]
  */
 
+function createHrefUrl({
+  pathname,
+  page,
+  limit,
+}: {
+  pathname: string;
+  page: number;
+  limit?: number;
+}) {
+  const href: UrlObject = {
+    pathname,
+    query: { page, ...(limit && { limit }) },
+  };
+
+  return href;
+}
+
 interface Props {
   page: number;
   totalPage: number;
-  limit: number;
+  limit?: number;
   pathname: string;
 }
 
@@ -104,7 +123,7 @@ export default function AutoPagination({
         return (
           <PaginationItem key={index}>
             <PaginationLink
-              href={{ pathname, query: { page: pageNumber, limit } }}
+              href={createHrefUrl({ pathname, page: pageNumber, limit })}
               isActive={pageNumber === page}
             >
               {pageNumber}
@@ -119,7 +138,7 @@ export default function AutoPagination({
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            href={{ pathname, query: { page: page - 1, limit } }}
+            href={createHrefUrl({ pathname, page: page - 1, limit })}
             className={cn({
               "cursor-not-allowed opacity-50 pointer-events-none": page === 1,
             })}
@@ -134,7 +153,7 @@ export default function AutoPagination({
         {renderPagination()}
         <PaginationItem>
           <PaginationNext
-            href={{ pathname, query: { page: page + 1, limit } }}
+            href={createHrefUrl({ pathname, page: page + 1, limit })}
             className={cn({
               "cursor-not-allowed opacity-50 pointer-events-none":
                 page === totalPage,

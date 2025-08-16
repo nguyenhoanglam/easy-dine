@@ -1,6 +1,6 @@
 import z from "zod";
 
-import { DishSchema } from "@/schemaValidations/dish.schema";
+import { dishSchema } from "./dish";
 
 export const DashboardIndicatorQueryParams = z.object({
   fromDate: z.coerce.date(),
@@ -18,7 +18,7 @@ export const DashboardIndicatorRes = z.object({
     orderCount: z.number(),
     servingTableCount: z.number(),
     dishIndicator: z.array(
-      DishSchema.extend({
+      dishSchema.extend({
         successOrders: z.number(),
       }),
     ),

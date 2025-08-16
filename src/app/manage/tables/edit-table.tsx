@@ -1,10 +1,12 @@
 "use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components";
+import { TableQRCode } from "@/components/table-qr-code";
 import {
   Dialog,
   DialogContent,
@@ -60,6 +62,8 @@ export default function EditTable({ id, setId, onSubmitSuccess }: Props) {
     resolver: zodResolver(updateTableSchema),
     defaultValues: DEFAULT_VALUES,
   });
+
+  const data = tableQuery.data?.ok ? tableQuery.data.data : null;
 
   useEffect(() => {
     if (tableQuery.data) {
@@ -134,7 +138,7 @@ export default function EditTable({ id, setId, onSubmitSuccess }: Props) {
                       id="number"
                       type="number"
                       className="w-full"
-                      value={id || ""}
+                      value={id || 0}
                       readOnly
                     />
                     <FormMessage />
@@ -171,6 +175,7 @@ export default function EditTable({ id, setId, onSubmitSuccess }: Props) {
                       <div className="col-span-3 w-full space-y-2">
                         <Select
                           onValueChange={field.onChange}
+                          value={field.value}
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -218,26 +223,35 @@ export default function EditTable({ id, setId, onSubmitSuccess }: Props) {
               <FormItem>
                 <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                   <Label>QR Code</Label>
-                  <div className="col-span-3 w-full space-y-2"></div>
+                  <div className="col-span-3 w-full space-y-2">
+                    {data && (
+                      <TableQRCode
+                        token={data.token}
+                        tableNumber={data.number}
+                      />
+                    )}
+                  </div>
                 </div>
               </FormItem>
               <FormItem>
                 <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                   <Label>URL gọi món</Label>
                   <div className="col-span-3 w-full space-y-2">
-                    <Link
-                      href={getTableLink({
-                        token: "123123123",
-                        tableNumber: id!,
-                      })}
-                      target="_blank"
-                      className="break-all"
-                    >
-                      {getTableLink({
-                        token: "123123123",
-                        tableNumber: id!,
-                      })}
-                    </Link>
+                    {data && (
+                      <Link
+                        href={getTableLink({
+                          token: data.token,
+                          tableNumber: data.number,
+                        })}
+                        target="_blank"
+                        className="break-all"
+                      >
+                        {getTableLink({
+                          token: data.token,
+                          tableNumber: data.number,
+                        })}
+                      </Link>
+                    )}
                   </div>
                 </div>
               </FormItem>

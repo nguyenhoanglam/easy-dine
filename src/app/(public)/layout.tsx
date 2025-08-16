@@ -21,7 +21,7 @@ export default function Layout({
 }>) {
   return (
     <div className="relative flex flex-col w-full min-h-screen">
-      <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+      <header className="sticky z-20 top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
         <nav className="hidden items-center font-medium md:flex md:gap-5 md:text-sm lg:gap-6">
           <Link
             href="#"

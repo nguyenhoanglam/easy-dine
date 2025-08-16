@@ -3,12 +3,17 @@
 import { setAuthCookie } from "@/helpers/storage";
 import { httpClient } from "@/lib/http";
 import {
-  Account,
   ChangePasswordReqBody,
   ChangePasswordResData,
   CreateEmployeeAccountReqBody,
+  CreateEmployeeAccountResData,
+  GetAccountListResData,
+  GetAccountProfileResData,
+  GetProfileResData,
   UpdateEmployeeAccountReqBody,
+  UpdateEmployeeAccountResData,
   UpdateProfileReqBody,
+  UpdateProfileResData,
 } from "@/types/account";
 
 const basePath = "/accounts";
@@ -17,22 +22,22 @@ const basePath = "/accounts";
  * Account actions
  */
 export async function getAccountListAction() {
-  return httpClient.get<Account[]>(basePath);
+  return httpClient.get<GetAccountListResData>(basePath);
 }
 
 export async function getAccountProfileAction(id: number) {
-  return httpClient.get<Account>(`${basePath}/detail/${id}`);
+  return httpClient.get<GetAccountProfileResData>(`${basePath}/detail/${id}`);
 }
 
 /*
  * Profile actions
  */
 export async function getProfileAction() {
-  return httpClient.get<Account>(`${basePath}/me`);
+  return httpClient.get<GetProfileResData>(`${basePath}/me`);
 }
 
 export async function updateProfileAction(body: UpdateProfileReqBody) {
-  return httpClient.put<Account>(`${basePath}/me`, body);
+  return httpClient.put<UpdateProfileResData>(`${basePath}/me`, body);
 }
 
 export async function changePasswordAction(body: ChangePasswordReqBody) {
@@ -55,7 +60,7 @@ export async function changePasswordAction(body: ChangePasswordReqBody) {
 export async function createEmployeeAccountAction(
   body: CreateEmployeeAccountReqBody,
 ) {
-  return httpClient.post<Account>(basePath, body);
+  return httpClient.post<CreateEmployeeAccountResData>(basePath, body);
 }
 
 export async function deleteEmployeeAccountAction(id: number) {
@@ -66,5 +71,8 @@ export async function updateEmployeeAccountAction(
   id: number,
   body: UpdateEmployeeAccountReqBody,
 ) {
-  return httpClient.put<Account>(`${basePath}/detail/${id}`, body);
+  return httpClient.put<UpdateEmployeeAccountResData>(
+    `${basePath}/detail/${id}`,
+    body,
+  );
 }

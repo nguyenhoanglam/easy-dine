@@ -5,7 +5,7 @@ export type EntityError = {
 
 export interface HttpRequestOptions extends RequestInit {
   baseURL?: string;
-  withAuth?: boolean;
+  useAuth?: boolean;
   timeout?: number;
   retries?: number;
   retryDelay?: number;

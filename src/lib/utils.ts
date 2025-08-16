@@ -15,7 +15,8 @@ import {
 } from "@/lib/constants";
 import { env } from "@/lib/env";
 import { HttpError, HttpResponse } from "@/types/http";
-import { PageMetadata, PaginatedData } from "@/types/others";
+import { TokenPayload } from "@/types/jwt";
+import { PageMetadata, PaginatedData, Role } from "@/types/others";
 
 /*
  * UI
@@ -51,9 +52,9 @@ export function showResponseSuccess(response: HttpResponse) {
   toast.success(response.message, { richColors: true });
 }
 
-export function decodeJWT<T = { exp: number; iat: number }>(token: string) {
+export function decodeToken(token: string) {
   try {
-    return jwt.decode(token) as T;
+    return jwt.decode(token) as TokenPayload;
   } catch (error) {
     console.error("Failed to decode JWT token:", error);
     return null;
@@ -99,6 +100,19 @@ export function formatCurrency(value: number) {
   }).format();
 }
 
+export const removeDiacritics = (str: string) => {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D");
+};
+
+/*
+ * Return data from query result for tables
+ * If the query result is successful, it returns the data array.
+ * If the query result is not successful, it returns an empty array.
+ */
 export function getTableQueryData<T>(
   queryResult: UseQueryResult<HttpResponse<T[]>>,
 ): T[] {
@@ -109,6 +123,11 @@ export function getTableQueryData<T>(
   return [];
 }
 
+/*
+ * Return paginated data from query result for tables
+ * If the query result is successful, it returns the paginated data.
+ * If the query result is not successful, it returns an empty paginated data.
+ */
 export function getTablePaginatedQueryData<T>(
   queryResult: UseQueryResult<HttpResponse<PaginatedData<T>>>,
 ): PaginatedData<T> {

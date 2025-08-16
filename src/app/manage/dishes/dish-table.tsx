@@ -44,11 +44,12 @@ import {
   formatCurrency,
   getTablePaginatedQueryData,
   getVietnameseDishStatus,
+  removeDiacritics,
 } from "@/lib/utils";
-import { useDishListQuery } from "@/queries/dish";
+import { usePaginatedDishListQuery } from "@/queries/dish";
 import { Dish } from "@/types/dish";
 
-const PAGE_SIZE = 2;
+const PAGE_SIZE = 10;
 
 const DishTableContext = createContext<{
   dishIdToEdit: number | undefined;
@@ -85,6 +86,15 @@ const columns: ColumnDef<Dish>[] = [
     accessorKey: "name",
     header: "Tên",
     cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue || filterValue.trim() === "") {
+        return true;
+      }
+
+      return removeDiacritics(row.getValue(columnId))
+        .toLowerCase()
+        .includes(removeDiacritics(filterValue).toLowerCase());
+    },
   },
   {
     accessorKey: "price",
@@ -153,7 +163,7 @@ export default function DishTable() {
   const [dishIdToEdit, setDishIdToEdit] = useState<number | undefined>();
   const [dishToDelete, setDishToDelete] = useState<Dish | null>(null);
 
-  const dishListQuery = useDishListQuery({ page, limit });
+  const dishListQuery = usePaginatedDishListQuery({ page, limit });
   const { items, totalItem, totalPage } =
     getTablePaginatedQueryData(dishListQuery);
 

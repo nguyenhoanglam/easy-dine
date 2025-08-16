@@ -19,6 +19,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import AddTable from "@/app/manage/tables/add-table";
 import EditTable from "@/app/manage/tables/edit-table";
 import AutoPagination from "@/components/auto-pagination";
+import { TableQRCode } from "@/components/table-qr-code";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -64,6 +65,16 @@ export const columns: ColumnDef<TableType>[] = [
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("number")}</div>
     ),
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue || filterValue.trim() === "") {
+        return true;
+      }
+
+      // NOTE: The row value is a number, so we need to convert it to a string for comparison
+      const rowValue = String(row.getValue(columnId));
+
+      return rowValue.includes(filterValue);
+    },
   },
   {
     accessorKey: "capacity",
@@ -82,7 +93,13 @@ export const columns: ColumnDef<TableType>[] = [
   {
     accessorKey: "token",
     header: "QR Code",
-    cell: ({ row }) => <div>{row.getValue("number")}</div>,
+    cell: ({ row }) => (
+      <TableQRCode
+        token={row.getValue("token")}
+        tableNumber={row.getValue("number")}
+        width={200}
+      />
+    ),
   },
   {
     id: "actions",
@@ -255,7 +272,6 @@ export default function TableTable() {
             <AutoPagination
               page={table.getState().pagination.pageIndex + 1}
               totalPage={table.getPageCount()}
-              limit={PAGE_SIZE}
               pathname="/manage/tables"
             />
           </div>

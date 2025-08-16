@@ -1,32 +1,39 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { useMounted } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
+import { useLogoutMutation } from "@/queries/auth";
+import { Role } from "@/types/others";
 
 import { useAuthContext } from "./app-provider";
 
-const menuItems = [
+const menuItems: {
+  title: string;
+  href: string;
+  roles?: Role[];
+  hideWhenLoggedIn?: boolean;
+}[] = [
   {
-    title: "Món ăn",
-    href: "/menu",
+    title: "Trang chủ",
+    href: "/",
   },
   {
-    title: "Đơn hàng",
-    href: "/orders",
-    authRequired: true,
-  },
-  {
-    title: "Quản lý",
-    href: "/manage/dashboard",
-    authRequired: true,
+    title: "Menu",
+    href: "/guest/menu",
+    roles: ["Guest"],
   },
   {
     title: "Đăng nhập",
     href: "/login",
-    authRequired: false,
+    hideWhenLoggedIn: true,
+  },
+  {
+    title: "Quản lý",
+    href: "/manage/dashboard",
+    roles: ["Owner", "Employee"],
   },
 ];
 
@@ -35,35 +42,53 @@ interface Props {
 }
 
 export default function NavItems({ className }: Props) {
-  const mounted = useMounted();
+  const router = useRouter();
   const pathname = usePathname();
-  const { isLoggedIn } = useAuthContext();
-  console.log("🚀 ~ NavItems ~ isLoggedIn:", isLoggedIn);
+  const mounted = useMounted();
+  const { role, setRole } = useAuthContext();
+  const logoutMutation = useLogoutMutation();
 
   if (!mounted) {
     return null;
   }
 
-  return menuItems.map((item) => {
-    const { href, title, authRequired } = item;
+  const handleLogout = async () => {
+    if (logoutMutation.isPending) return;
 
-    if (
-      (authRequired === true && !isLoggedIn) ||
-      (authRequired === false && isLoggedIn)
-    ) {
-      return null;
-    }
+    await logoutMutation.mutateAsync();
 
-    return (
-      <Link
-        href={item.href}
-        key={href}
-        className={cn(className, {
-          "text-foreground": pathname === href,
-        })}
-      >
-        {title}
-      </Link>
-    );
-  });
+    setRole(null);
+    router.push("/");
+  };
+  return (
+    <>
+      {menuItems.map((item) => {
+        const { title, href, roles, hideWhenLoggedIn } = item;
+
+        const accessible = !roles || (role && roles.includes(role));
+        const hidden = role && hideWhenLoggedIn;
+
+        if (!accessible || hidden) {
+          return null;
+        }
+
+        return (
+          <Link
+            href={item.href}
+            key={href}
+            className={cn(className, {
+              "text-foreground": pathname === href,
+            })}
+          >
+            {title}
+          </Link>
+        );
+      })}
+      {role && (
+        <div className={cn(className, "cursor-pointer")} onClick={handleLogout}>
+          Đăng xuất
+        </div>
+      )}
+    </>
+  );
 }

@@ -1,5 +1,5 @@
 import { StorageKey } from "@/lib/constants";
-import { decodeJWT } from "@/lib/utils";
+import { decodeToken } from "@/lib/utils";
 
 type TStorageKey = (typeof StorageKey)[keyof typeof StorageKey];
 
@@ -64,8 +64,8 @@ export async function setAuthCookie({
   accessToken: string;
   refreshToken: string;
 }) {
-  const accessTokenExpiry = decodeJWT(accessToken)?.exp;
-  const refreshTokenExpiry = decodeJWT(refreshToken)?.exp;
+  const accessTokenExpiry = decodeToken(accessToken)?.exp;
+  const refreshTokenExpiry = decodeToken(refreshToken)?.exp;
 
   await setCookie("access_token", accessToken, {
     expires: accessTokenExpiry ? accessTokenExpiry * 1000 : undefined,

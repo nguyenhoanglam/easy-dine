@@ -1,35 +1,71 @@
 "use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components";
+import { useAuthContext } from "@/components/app-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GuestLoginBody, GuestLoginBodyType } from "@/schemas/guest";
+import { setAuthLocalStorage } from "@/helpers/storage";
+import { showResponseError } from "@/lib/utils";
+import { useGuestLoginMutation } from "@/queries/guest";
+import { guestLoginSchema } from "@/schemas/guest";
+import { GuestLoginReqBody } from "@/types/guest";
 
-export default function GuestLoginForm() {
-  const form = useForm<GuestLoginBodyType>({
-    resolver: zodResolver(GuestLoginBody),
+function GuestLogin() {
+  const { setRole } = useAuthContext();
+  const router = useRouter();
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const tableNumber = Number(params.number);
+  const token = searchParams.get("token");
+
+  const { mutateAsync, isPending } = useGuestLoginMutation();
+
+  const form = useForm<GuestLoginReqBody>({
+    resolver: zodResolver(guestLoginSchema),
     defaultValues: {
       name: "",
-      token: "",
-      tableNumber: 1,
+      tableNumber: tableNumber || 0,
+      token: token || "",
     },
   });
 
+  useEffect(() => {
+    if (!tableNumber || !token) {
+      router.push("/");
+    }
+  }, [router, tableNumber, token]);
+
+  const onSubmit = async (data: GuestLoginReqBody) => {
+    if (isPending) return;
+
+    const response = await mutateAsync(data);
+
+    if (!response.ok) {
+      showResponseError(response);
+      return;
+    }
+
+    const { accessToken, refreshToken } = response.data;
+    setAuthLocalStorage({ accessToken, refreshToken });
+    setRole(response.data.guest.role);
+    router.push("/guest/menu");
+  };
+
   return (
-    <Card className="mx-auto max-w-sm">
+    <Card className="w-full sm:max-w-2xl self-center">
       <CardHeader>
-        <CardTitle className="text-2xl">Đăng nhập gọi món</CardTitle>
+        <CardTitle className="text-xl text-center">Đăng nhập gọi món</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form
-            className="space-y-2 max-w-[600px] flex-shrink-0 w-full"
-            noValidate
-          >
+          <form noValidate onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid gap-4">
               <FormField
                 control={form.control}
@@ -44,8 +80,7 @@ export default function GuestLoginForm() {
                   </FormItem>
                 )}
               />
-
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" loading={isPending}>
                 Đăng nhập
               </Button>
             </div>
@@ -53,5 +88,13 @@ export default function GuestLoginForm() {
         </Form>
       </CardContent>
     </Card>
+  );
+}
+
+export default function GuestLoginForm() {
+  return (
+    <Suspense>
+      <GuestLogin />
+    </Suspense>
   );
 }

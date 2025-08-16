@@ -2,29 +2,36 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { SearchParamKey, StorageKey } from "@/lib/constants";
 
+import { decodeToken } from "./lib/utils";
+
 const AUTH_ROUTES = ["/login"];
-const PRIVATE_ROUTES = [
-  "/manage/dashboard",
-  "/manage/accounts",
-  "/manage/dishes",
-  "manage/tables",
-  "/manage/settings",
-  "/settings",
-  "/orders",
-];
+const MANAGER_ROUTES = ["/manage"];
+const GUEST_ROUTES = ["/guest"];
+const PROTECTED_ROUTES = [...MANAGER_ROUTES, ...GUEST_ROUTES];
 
-const PRIVATE_ROUTE_REGEXES = [/^\/orders\/\d+/];
-
-function isAuthRoute(pathname: string) {
-  return AUTH_ROUTES.includes(pathname);
+function getRouteRegex(route: string) {
+  return new RegExp(`^${route}(\/|$)`);
 }
 
-function isPrivateRoute(pathname: string) {
-  if (PRIVATE_ROUTES.includes(pathname)) {
-    return true;
-  }
+function isAuthRoute(pathname: string) {
+  return AUTH_ROUTES.some((route) => getRouteRegex(route).test(pathname));
+}
 
-  return PRIVATE_ROUTE_REGEXES.some((regex) => pathname.match(regex));
+function isManagerRoute(pathname: string) {
+  return MANAGER_ROUTES.some((route) => getRouteRegex(route).test(pathname));
+}
+
+function isGuestRoute(pathname: string) {
+  return GUEST_ROUTES.some((route) => getRouteRegex(route).test(pathname));
+}
+
+function isProtectedRoute(pathname: string) {
+  return PROTECTED_ROUTES.some((route) => getRouteRegex(route).test(pathname));
+}
+
+function deleteCookieTokens(request: NextRequest) {
+  request.cookies.delete(StorageKey.AccessToken);
+  request.cookies.delete(StorageKey.RefreshToken);
 }
 
 export async function middleware(request: NextRequest) {
@@ -33,7 +40,7 @@ export async function middleware(request: NextRequest) {
   const refreshToken =
     request.cookies.get(StorageKey.RefreshToken)?.value ?? "";
 
-  if (isPrivateRoute(pathname)) {
+  if (isProtectedRoute(pathname)) {
     if (!refreshToken) {
       const url = new URL("/login", request.url);
       url.searchParams.set(SearchParamKey.ClearTokens, "true");
@@ -49,8 +56,34 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (isAuthRoute(pathname) && refreshToken) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (refreshToken) {
+    if (isAuthRoute(pathname)) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    if (isProtectedRoute(pathname) && !accessToken) {
+      const url = new URL("/refresh-token", request.url);
+      url.searchParams.set(SearchParamKey.RefreshToken, refreshToken);
+      url.searchParams.set(SearchParamKey.Redirect, pathname);
+
+      return NextResponse.redirect(url);
+    }
+
+    const role = decodeToken(refreshToken)?.role;
+    // Invalid tokenf
+    if (!role) {
+      deleteCookieTokens(request);
+      const url = new URL("/login", request.url);
+      url.searchParams.set(SearchParamKey.ClearTokens, "true");
+      return NextResponse.redirect(url);
+    }
+
+    if (
+      (role === "Guest" && isManagerRoute(pathname)) ||
+      (role !== "Guest" && isGuestRoute(pathname))
+    ) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
   }
 
   return NextResponse.next();
