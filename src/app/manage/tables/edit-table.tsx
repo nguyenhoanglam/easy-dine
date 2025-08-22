@@ -48,11 +48,11 @@ const DEFAULT_VALUES: UpdateTableReqBody = {
   changeToken: false,
 };
 
-interface Props {
+type Props = {
   id?: number | undefined;
   setId: (value: number | undefined) => void;
   onSubmitSuccess?: () => void;
-}
+};
 
 export default function EditTable({ id, setId, onSubmitSuccess }: Props) {
   const tableQuery = useTableQuery(id);

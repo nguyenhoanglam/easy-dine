@@ -1,10 +1,12 @@
 import { UseQueryResult } from "@tanstack/react-query";
 import { type ClassValue, clsx } from "clsx";
 import currency from "currency.js";
+import { format } from "date-fns";
 import jwt from "jsonwebtoken";
+import { BookX, CookingPot, HandCoins, Loader, Truck } from "lucide-react";
 import { Metadata } from "next";
 import type { FieldPath, FieldValues, UseFormSetError } from "react-hook-form";
-import { toast } from "sonner";
+import { toast, ToastT } from "sonner";
 import { twMerge } from "tailwind-merge";
 
 import {
@@ -16,13 +18,17 @@ import {
 import { env } from "@/lib/env";
 import { HttpError, HttpResponse } from "@/types/http";
 import { TokenPayload } from "@/types/jwt";
-import { PageMetadata, PaginatedData, Role } from "@/types/others";
+import { DateFormatPattern, PageMetadata, PaginatedData } from "@/types/others";
 
 /*
  * UI
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+export function showResponseSuccess(response: HttpResponse) {
+  toast.success(response.message, { richColors: true });
 }
 
 export function showResponseError<T extends FieldValues>(
@@ -45,19 +51,6 @@ export function showResponseError<T extends FieldValues>(
         message: err.message,
       });
     });
-  }
-}
-
-export function showResponseSuccess(response: HttpResponse) {
-  toast.success(response.message, { richColors: true });
-}
-
-export function decodeToken(token: string) {
-  try {
-    return jwt.decode(token) as TokenPayload;
-  } catch (error) {
-    console.error("Failed to decode JWT token:", error);
-    return null;
   }
 }
 
@@ -91,6 +84,15 @@ export function createMetadata({
   };
 }
 
+export function decodeToken(token: string) {
+  try {
+    return jwt.decode(token) as TokenPayload;
+  } catch (error) {
+    console.error("Failed to decode JWT token:", error);
+    return null;
+  }
+}
+
 export function formatCurrency(value: number) {
   return currency(value, {
     pattern: "# !",
@@ -108,19 +110,38 @@ export const removeDiacritics = (str: string) => {
     .replace(/Đ/g, "D");
 };
 
+export const matchesSearchQuery = (
+  fullText: string,
+  searchText: string | null | undefined,
+) => {
+  if (
+    searchText === null ||
+    searchText === undefined ||
+    searchText.trim() === ""
+  ) {
+    return true;
+  }
+
+  const fullTextLower = removeDiacritics(fullText.toLowerCase());
+  const searchTextLower = removeDiacritics(searchText.trim().toLowerCase());
+
+  return fullTextLower.includes(searchTextLower);
+};
+
 /*
  * Return data from query result for tables
  * If the query result is successful, it returns the data array.
  * If the query result is not successful, it returns an empty array.
  */
-export function getTableQueryData<T>(
+export function getTableQueryResult<T>(
   queryResult: UseQueryResult<HttpResponse<T[]>>,
-): T[] {
+): { data: T[]; totalItem: number } {
   if (queryResult.data && queryResult.data.ok) {
-    return queryResult.data.data;
+    const { data } = queryResult.data;
+    return { data, totalItem: data.length };
   }
 
-  return [];
+  return { data: [], totalItem: 0 };
 }
 
 /*
@@ -193,6 +214,36 @@ export function getVietnameseTableStatus(
     default:
       return "Ẩn";
   }
+}
+
+export const OrderStatusIcon = {
+  [OrderStatus.Pending]: Loader,
+  [OrderStatus.Processing]: CookingPot,
+  [OrderStatus.Rejected]: BookX,
+  [OrderStatus.Delivered]: Truck,
+  [OrderStatus.Paid]: HandCoins,
+};
+
+export const formatDate = (
+  date: string | Date,
+  pattern: DateFormatPattern = "HH:mm:ss dd/MM/yyyy",
+) => {
+  return format(date instanceof Date ? date : new Date(date), pattern);
+};
+
+export function createQueryString(
+  params: Record<string, string | number | boolean | null | undefined>,
+) {
+  const searchParams = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== null && value !== undefined && value !== "") {
+      searchParams.append(key, String(value));
+    }
+  }
+
+  const queryString = searchParams.toString();
+  return queryString ? `?${queryString}` : "";
 }
 
 export function getTableLink({

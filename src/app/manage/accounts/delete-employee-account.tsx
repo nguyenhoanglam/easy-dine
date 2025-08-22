@@ -14,10 +14,10 @@ import { showResponseError, showResponseSuccess } from "@/lib/utils";
 import { useDeleteEmployeeAccountMutation } from "@/queries/account";
 import { Account } from "@/types/account";
 
-interface Props {
+type Props = {
   employee: Account | null;
   setEmployee: (value: Account | null) => void;
-}
+};
 
 export default function DeleteEmployeeAccount({
   employee,

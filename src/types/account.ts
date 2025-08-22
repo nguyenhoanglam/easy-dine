@@ -4,9 +4,11 @@ import {
   accountSchema,
   changePasswordSchema,
   createEmployeeAccountSchema,
+  createGuestAccountSchema,
   updateEmployeeAccountSchema,
   updateProfileSchema,
 } from "@/schemas/account";
+import { Guest } from "@/types/guest";
 
 export type Account = z.infer<typeof accountSchema>;
 
@@ -39,3 +41,21 @@ export type UpdateEmployeeAccountReqBody = z.infer<
 >;
 
 export type UpdateEmployeeAccountResData = Account;
+
+export type CreateGuestAccountReqBody = z.infer<
+  typeof createGuestAccountSchema
+>;
+
+export type CreateGuestAccountResData = Guest;
+
+export type GetGuestListReqBody = {
+  fromDate: Date;
+  toDate: Date;
+};
+
+export type GetGuestListResData = Omit<Guest, "role">[];
+
+export type GuestListQueryParams = {
+  fromDate?: Date;
+  toDate?: Date;
+};

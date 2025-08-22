@@ -1,28 +1,32 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-const QueryKeys = {
+const QueryKey = {
   Profile: "profile",
   Accounts: "accounts",
-};
+  Guests: "guests",
+} as const;
 
 import {
   changePasswordAction,
   createEmployeeAccountAction,
+  createGuestAccountAction,
   deleteEmployeeAccountAction,
   getAccountListAction,
   getAccountProfileAction,
+  getGuestListAction,
   getProfileAction,
   updateEmployeeAccountAction,
   updateProfileAction,
 } from "@/actions/account";
 import {
   CreateEmployeeAccountReqBody,
+  GuestListQueryParams,
   UpdateEmployeeAccountReqBody,
 } from "@/types/account";
 
 export function useProfileQuery() {
   return useQuery({
-    queryKey: [QueryKeys.Profile],
+    queryKey: [QueryKey.Profile],
     queryFn: getProfileAction,
   });
 }
@@ -32,11 +36,13 @@ export function useUpdateProfileMutation() {
 
   return useMutation({
     mutationFn: updateProfileAction,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Profile],
-        exact: true,
-      });
+    onSettled: (data) => {
+      if (data?.ok) {
+        queryClient.invalidateQueries({
+          queryKey: [QueryKey.Profile],
+          exact: true,
+        });
+      }
     },
   });
 }
@@ -49,14 +55,14 @@ export function useChangePasswordMutation() {
 
 export function useAccountListQuery() {
   return useQuery({
-    queryKey: [QueryKeys.Accounts],
+    queryKey: [QueryKey.Accounts],
     queryFn: getAccountListAction,
   });
 }
 
 export function useAccountQuery(id: number | undefined) {
   return useQuery({
-    queryKey: [QueryKeys.Accounts, id],
+    queryKey: [QueryKey.Accounts, id],
     queryFn: async () => getAccountProfileAction(id!),
     enabled: id !== undefined && id !== null,
   });
@@ -68,11 +74,13 @@ export function useCreateEmployeeAccountMutation() {
   return useMutation({
     mutationFn: (body: CreateEmployeeAccountReqBody) =>
       createEmployeeAccountAction(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Accounts],
-        exact: true,
-      });
+    onSettled: (data) => {
+      if (data?.ok) {
+        queryClient.invalidateQueries({
+          queryKey: [QueryKey.Accounts],
+          exact: true,
+        });
+      }
     },
   });
 }
@@ -88,11 +96,13 @@ export const useUpdateEmployeeAccountMutation = () => {
       id: number;
       body: UpdateEmployeeAccountReqBody;
     }) => updateEmployeeAccountAction(id, body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Accounts],
-        exact: true,
-      });
+    onSettled: (data) => {
+      if (data?.ok) {
+        queryClient.invalidateQueries({
+          queryKey: [QueryKey.Accounts],
+          exact: true,
+        });
+      }
     },
   });
 };
@@ -102,11 +112,36 @@ export const useDeleteEmployeeAccountMutation = () => {
 
   return useMutation({
     mutationFn: (id: number) => deleteEmployeeAccountAction(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Accounts],
-        exact: true,
-      });
+    onSettled: (data) => {
+      if (data?.ok) {
+        queryClient.invalidateQueries({
+          queryKey: [QueryKey.Accounts],
+          exact: true,
+        });
+      }
     },
   });
 };
+
+export function useCreateGuestAccountMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createGuestAccountAction,
+    onSettled: (data) => {
+      if (data?.ok) {
+        queryClient.invalidateQueries({
+          queryKey: [QueryKey.Guests],
+          exact: true,
+        });
+      }
+    },
+  });
+}
+
+export function useGuestListQuery(params?: GuestListQueryParams) {
+  return useQuery({
+    queryKey: [QueryKey.Guests, params],
+    queryFn: async () => getGuestListAction(params),
+  });
+}

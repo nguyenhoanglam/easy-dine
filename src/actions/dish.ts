@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
+import queryString from "query-string";
 
 import { httpClient } from "@/lib/http";
 import {
@@ -27,17 +28,9 @@ export async function getDishListAction() {
   });
 }
 
-export async function getPaginatedDishListAction({
-  page,
-  limit,
-}: PaginationParams) {
-  const searchParams = new URLSearchParams({
-    page: page.toString(),
-    limit: limit.toString(),
-  });
-
+export async function getPaginatedDishListAction(params: PaginationParams) {
   return httpClient.get<PaginatedDishListResData>(
-    `${basePath}/pagination?${searchParams.toString()}`,
+    `${basePath}/pagination?${queryString.stringify(params)}`,
   );
 }
 

@@ -13,13 +13,12 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { useSearchParams } from "next/navigation";
 import { createContext, useContext, useState } from "react";
 
 import AddDish from "@/app/manage/dishes/add-dish";
 import DeleteDish from "@/app/manage/dishes/delete-dish";
 import EditDish from "@/app/manage/dishes/edit-dish";
-import AutoPagination from "@/components/auto-pagination";
+import PaginationControl from "@/components/pagination-control";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,14 +38,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SearchParamKey } from "@/lib/constants";
 import {
   formatCurrency,
-  getTablePaginatedQueryData,
+  getTableQueryResult,
   getVietnameseDishStatus,
   removeDiacritics,
 } from "@/lib/utils";
-import { usePaginatedDishListQuery } from "@/queries/dish";
+import { useDishListQuery } from "@/queries/dish";
 import { Dish } from "@/types/dish";
 
 const PAGE_SIZE = 10;
@@ -155,25 +153,23 @@ const columns: ColumnDef<Dish>[] = [
 ];
 
 export default function DishTable() {
-  const searchParam = useSearchParams();
-  const page = Number(searchParam.get(SearchParamKey.Page) ?? 1);
-  const limit = Number(searchParam.get(SearchParamKey.Limit) ?? PAGE_SIZE);
-  const pageIndex = page - 1;
-
   const [dishIdToEdit, setDishIdToEdit] = useState<number | undefined>();
   const [dishToDelete, setDishToDelete] = useState<Dish | null>(null);
-
-  const dishListQuery = usePaginatedDishListQuery({ page, limit });
-  const { items, totalItem, totalPage } =
-    getTablePaginatedQueryData(dishListQuery);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: PAGE_SIZE,
+  });
+
+  const dishListQuery = useDishListQuery();
+  const { data, totalItem } = getTableQueryResult(dishListQuery);
 
   const table = useReactTable({
-    data: items,
+    data,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -185,18 +181,14 @@ export default function DishTable() {
     onRowSelectionChange: setRowSelection,
     // The next 2 lines are important for manual pagination
     manualPagination: true,
-    pageCount: totalPage,
+    rowCount: totalItem,
     autoResetPageIndex: false,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
-      // The table's pagination state should be driven by the URL params
-      pagination: {
-        pageIndex,
-        pageSize: PAGE_SIZE,
-      },
+      pagination,
     },
   });
 
@@ -282,11 +274,13 @@ export default function DishTable() {
             <strong>{totalItem}</strong> kết quả
           </div>
           <div>
-            <AutoPagination
+            <PaginationControl
               page={table.getState().pagination.pageIndex + 1}
-              totalPage={totalPage}
-              limit={PAGE_SIZE}
-              pathname="/manage/dishes"
+              pageSize={PAGE_SIZE}
+              totalItem={totalItem}
+              onPageChange={(page) => {
+                setPagination((prev) => ({ ...prev, pageIndex: page - 1 }));
+              }}
             />
           </div>
         </div>

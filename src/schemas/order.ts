@@ -2,7 +2,12 @@ import z from "zod";
 
 import { OrderStatusValues } from "@/lib/constants";
 
-export const createGuestOrdersSchema = z
+export const getOrderListQueryParamsSchema = z.object({
+  fromDate: z.coerce.date().optional(),
+  toDate: z.coerce.date().optional(),
+});
+
+export const createOrdersSchema = z
   .object({
     guestId: z.number(),
     orders: z.array(
@@ -14,12 +19,8 @@ export const createGuestOrdersSchema = z
   })
   .strict();
 
-export const updateGuestOrderSchema = z.object({
-  status: z.enum(OrderStatusValues),
+export const updateOrderSchema = z.object({
   dishId: z.number(),
   quantity: z.number(),
-});
-
-export const payGuestOrdersSchema = z.object({
-  guestId: z.number(),
+  status: z.enum(OrderStatusValues),
 });

@@ -76,3 +76,11 @@ export const OrderStatusValues = [
 ] as const;
 
 export const ManagerRoom = "manager" as const;
+
+export const SocketEvent = {
+  Connect: "connect",
+  Disconnect: "disconnect",
+  NewOrder: "new-order",
+  UpdateOrder: "update-order",
+  Payment: "payment",
+} as const;

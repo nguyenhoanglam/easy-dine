@@ -37,11 +37,11 @@ const DEFAULT_VALUES: UpdateEmployeeAccountReqBody = {
   confirmPassword: undefined,
 };
 
-interface Props {
+type Props = {
   id?: number | undefined;
   setId: (value: number | undefined) => void;
   onSubmitSuccess?: () => void;
-}
+};
 
 export default function EditEmployeeAccount({
   id,

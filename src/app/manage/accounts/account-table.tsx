@@ -13,13 +13,12 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { useSearchParams } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
 import AddEmployeeAccount from "@/app/manage/accounts/add-employee-account";
 import DeleteEmployeeAccount from "@/app/manage/accounts/delete-employee-account";
 import EditEmployeeAccount from "@/app/manage/accounts/edit-employee-account";
-import AutoPagination from "@/components/auto-pagination";
+import PaginationControl from "@/components/pagination-control";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getTableQueryData } from "@/lib/utils";
+import { getTableQueryResult, matchesSearchQuery } from "@/lib/utils";
 import { useAccountListQuery } from "@/queries/account";
 import { Account } from "@/types/account";
 
@@ -96,13 +95,7 @@ const columns: ColumnDef<Account>[] = [
     },
     cell: ({ row }) => <div>{row.getValue("email")}</div>,
     filterFn: (row, columnId, filterValue) => {
-      if (!filterValue || filterValue.trim() === "") {
-        return true;
-      }
-
-      return String(row.getValue(columnId))
-        .toLowerCase()
-        .includes(filterValue.toLowerCase());
+      return matchesSearchQuery(row.original.email, filterValue);
     },
   },
   {
@@ -143,10 +136,6 @@ const columns: ColumnDef<Account>[] = [
 ];
 
 export default function AccountTable() {
-  const searchParam = useSearchParams();
-  const page = Number(searchParam.get("page") ?? 1);
-  const pageIndex = page - 1;
-
   const [employeeIdToEdit, setEmployeeIdToEdit] = useState<
     number | undefined
   >();
@@ -154,17 +143,17 @@ export default function AccountTable() {
     null,
   );
 
-  const accountListQuery = useAccountListQuery();
-  const data = getTableQueryData(accountListQuery);
-
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [pagination, setPagination] = useState({
-    pageIndex, // Gía trị mặc định ban đầu, không có ý nghĩa khi data được fetch bất đồng bộ
+    pageIndex: 0,
     pageSize: PAGE_SIZE,
   });
+
+  const accountListQuery = useAccountListQuery();
+  const { data, totalItem } = getTableQueryResult(accountListQuery);
 
   const table = useReactTable({
     data,
@@ -179,6 +168,7 @@ export default function AccountTable() {
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
     autoResetPageIndex: false,
+    rowCount: totalItem,
     state: {
       sorting,
       columnFilters,
@@ -187,13 +177,6 @@ export default function AccountTable() {
       pagination,
     },
   });
-
-  useEffect(() => {
-    table.setPagination({
-      pageIndex,
-      pageSize: PAGE_SIZE,
-    });
-  }, [table, pageIndex]);
 
   return (
     <AccountTableContext.Provider
@@ -280,13 +263,16 @@ export default function AccountTable() {
           <div className="text-xs text-muted-foreground py-4 flex-1 ">
             Hiển thị{" "}
             <strong>{table.getPaginationRowModel().rows.length}</strong> trong{" "}
-            <strong>{data.length}</strong> kết quả
+            <strong>{totalItem}</strong> kết quả
           </div>
           <div>
-            <AutoPagination
+            <PaginationControl
               page={table.getState().pagination.pageIndex + 1}
-              totalPage={table.getPageCount()}
-              pathname="/manage/accounts"
+              pageSize={PAGE_SIZE}
+              totalItem={totalItem}
+              onPageChange={(page) => {
+                setPagination((prev) => ({ ...prev, pageIndex: page - 1 }));
+              }}
             />
           </div>
         </div>

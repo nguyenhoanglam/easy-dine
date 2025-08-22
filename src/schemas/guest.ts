@@ -26,7 +26,7 @@ export const guestLoginSchema = z
   })
   .strict();
 
-export const createGuestOrdersSchema = z.array(
+export const guestCreateOrdersSchema = z.array(
   z.object({
     dishId: z.number(),
     quantity: z.number(),

@@ -9,20 +9,20 @@ import {
 } from "@/actions/table";
 import { UpdateTableReqBody } from "@/types/table";
 
-const QueryKeys = {
+const QueryKey = {
   Tables: "tables",
-};
+} as const;
 
 export function useTableListQuery() {
   return useQuery({
-    queryKey: [QueryKeys.Tables],
+    queryKey: [QueryKey.Tables],
     queryFn: getTableListAction,
   });
 }
 
 export function useTableQuery(number: number | undefined) {
   return useQuery({
-    queryKey: [QueryKeys.Tables, number],
+    queryKey: [QueryKey.Tables, number],
     queryFn: () => getTableDetailAction(number!),
     enabled: number !== undefined && number !== null,
   });
@@ -33,11 +33,13 @@ export function useCreateTableMutation() {
 
   return useMutation({
     mutationFn: createTableAction,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Tables],
-        exact: true,
-      });
+    onSettled: (data) => {
+      if (data?.ok) {
+        queryClient.invalidateQueries({
+          queryKey: [QueryKey.Tables],
+          exact: true,
+        });
+      }
     },
   });
 }
@@ -53,11 +55,13 @@ export function useUpdateTableMutation() {
       number: number;
       body: UpdateTableReqBody;
     }) => updateTableAction(number, body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Tables],
-        exact: true,
-      });
+    onSettled: (data) => {
+      if (data?.ok) {
+        queryClient.invalidateQueries({
+          queryKey: [QueryKey.Tables],
+          exact: true,
+        });
+      }
     },
   });
 }
@@ -67,11 +71,13 @@ export const useDeleteTableMutation = () => {
 
   return useMutation({
     mutationFn: async (number: number) => deleteTableAction(number),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.Tables],
-        exact: true,
-      });
+    onSettled: (data) => {
+      if (data?.ok) {
+        queryClient.invalidateQueries({
+          queryKey: [QueryKey.Tables],
+          exact: true,
+        });
+      }
     },
   });
 };

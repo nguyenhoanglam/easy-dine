@@ -2,14 +2,19 @@
 
 import { setAuthCookie } from "@/helpers/storage";
 import { httpClient } from "@/lib/http";
+import { createQueryString } from "@/lib/utils";
 import {
   ChangePasswordReqBody,
   ChangePasswordResData,
   CreateEmployeeAccountReqBody,
   CreateEmployeeAccountResData,
+  CreateGuestAccountReqBody,
+  CreateGuestAccountResData,
   GetAccountListResData,
   GetAccountProfileResData,
+  GetGuestListResData,
   GetProfileResData,
+  GuestListQueryParams,
   UpdateEmployeeAccountReqBody,
   UpdateEmployeeAccountResData,
   UpdateProfileReqBody,
@@ -19,7 +24,7 @@ import {
 const basePath = "/accounts";
 
 /*
- * Account actions
+ * Account
  */
 export async function getAccountListAction() {
   return httpClient.get<GetAccountListResData>(basePath);
@@ -30,7 +35,7 @@ export async function getAccountProfileAction(id: number) {
 }
 
 /*
- * Profile actions
+ * Profile
  */
 export async function getProfileAction() {
   return httpClient.get<GetProfileResData>(`${basePath}/me`);
@@ -55,7 +60,7 @@ export async function changePasswordAction(body: ChangePasswordReqBody) {
 }
 
 /*
- * Employee actions
+ * Employee
  */
 export async function createEmployeeAccountAction(
   body: CreateEmployeeAccountReqBody,
@@ -74,5 +79,25 @@ export async function updateEmployeeAccountAction(
   return httpClient.put<UpdateEmployeeAccountResData>(
     `${basePath}/detail/${id}`,
     body,
+  );
+}
+
+/*
+ * Guest
+ */
+export async function createGuestAccountAction(
+  body: CreateGuestAccountReqBody,
+) {
+  return httpClient.post<CreateGuestAccountResData>(`${basePath}/guests`, body);
+}
+
+export async function getGuestListAction(params?: GuestListQueryParams) {
+  const queryParams = {
+    fromDate: params?.fromDate?.toISOString(),
+    toDate: params?.toDate?.toISOString(),
+  };
+
+  return httpClient.get<GetGuestListResData>(
+    `${basePath}/guests${createQueryString(queryParams)}`,
   );
 }

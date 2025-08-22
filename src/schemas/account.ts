@@ -8,6 +8,7 @@ import {
   emailSchema,
   passwordSchema,
 } from "@/schemas/common";
+import { tableNumberSchema } from "@/schemas/table";
 
 const roleSchema = z.enum([Role.Employee, Role.Owner]);
 
@@ -108,3 +109,8 @@ export const updateEmployeeAccountSchema = z
       }
     }
   });
+
+export const createGuestAccountSchema = z.object({
+  name: accoutnNameSchema,
+  tableNumber: tableNumberSchema,
+});

@@ -3,12 +3,22 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+import { useAuthContext } from "@/components/app-provider";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useMounted } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 import { useLogoutMutation } from "@/queries/auth";
 import { Role } from "@/types/others";
-
-import { useAuthContext } from "./app-provider";
 
 const menuItems: {
   title: string;
@@ -26,6 +36,11 @@ const menuItems: {
     roles: ["Guest"],
   },
   {
+    title: "Đơn hàng",
+    href: "/guest/orders",
+    roles: ["Guest"],
+  },
+  {
     title: "Đăng nhập",
     href: "/login",
     hideWhenLoggedIn: true,
@@ -37,9 +52,9 @@ const menuItems: {
   },
 ];
 
-interface Props {
+type Props = {
   className?: string;
-}
+};
 
 export default function NavItems({ className }: Props) {
   const router = useRouter();
@@ -85,9 +100,23 @@ export default function NavItems({ className }: Props) {
         );
       })}
       {role && (
-        <div className={cn(className, "cursor-pointer")} onClick={handleLogout}>
-          Đăng xuất
-        </div>
+        <AlertDialog>
+          <AlertDialogTrigger>
+            <div className={cn(className, "cursor-pointer")}>Đăng xuất</div>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Bạn có muốn đăng xuất không?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Đăng xuất có thể làm mất hóa đơn của bạn.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Hủy</AlertDialogCancel>
+              <AlertDialogAction onClick={handleLogout}>OK</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </>
   );

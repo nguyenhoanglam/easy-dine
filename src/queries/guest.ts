@@ -8,9 +8,9 @@ import {
   guestRefreshTokenAction,
 } from "@/actions/guest";
 
-const QueryKeys = {
+const QueryKey = {
   GuestOrders: "guest-orders",
-};
+} as const;
 
 export function useGuestLoginMutation() {
   return useMutation({
@@ -30,9 +30,9 @@ export function useGuestRefreshTokenMutation() {
   });
 }
 
-export function useGuestGetOrderListQuery() {
+export function useGuestOrderListQuery() {
   return useQuery({
-    queryKey: [QueryKeys.GuestOrders],
+    queryKey: [QueryKey.GuestOrders],
     queryFn: guestGetOrderListAction,
   });
 }

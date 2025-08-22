@@ -24,8 +24,8 @@ export const dishSchema = z.object({
   description: descriptionSchema,
   image: imageSchema,
   status: z.enum(DishStatusValues),
-  createdAt: dateSchema,
-  updatedAt: dateSchema,
+  createdAt: z.string(),
+  updatedAt: z.string(),
 });
 
 export const createDishSchema = z.object({

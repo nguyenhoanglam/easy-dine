@@ -2,7 +2,7 @@ import z from "zod";
 
 import { TableStatusValues } from "@/lib/constants";
 
-const numberSchema = z.transform(Number).pipe(
+export const tableNumberSchema = z.transform(Number).pipe(
   z.number({ error: "Số bàn không hợp lệ." }).positive({
     error: "Số bàn không hợp lệ.",
   }),
@@ -21,7 +21,7 @@ const capacitySchema = z.transform(Number).pipe(
 const statusSchema = z.enum(TableStatusValues);
 
 export const tableSchema = z.object({
-  number: numberSchema,
+  number: tableNumberSchema,
   capacity: capacitySchema,
   status: statusSchema,
   token: z.string(),
@@ -30,7 +30,7 @@ export const tableSchema = z.object({
 });
 
 export const createTableSchema = z.object({
-  number: numberSchema,
+  number: tableNumberSchema,
   capacity: capacitySchema,
   status: statusSchema.optional(),
 });

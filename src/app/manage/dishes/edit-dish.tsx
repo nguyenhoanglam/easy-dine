@@ -51,11 +51,11 @@ const DEFAULT_VALUES: UpdateDishReqBody = {
   status: DishStatus.Unavailable,
 };
 
-interface Props {
+type Props = {
   id?: number | undefined;
   setId: (value: number | undefined) => void;
   onSubmitSuccess?: () => void;
-}
+};
 
 export default function EditDish({ id, setId, onSubmitSuccess }: Props) {
   const [imageFile, setImageFile] = useState<File | null>(null);

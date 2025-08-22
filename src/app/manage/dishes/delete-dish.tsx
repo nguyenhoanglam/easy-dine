@@ -12,10 +12,10 @@ import { showResponseError, showResponseSuccess } from "@/lib/utils";
 import { useDeleteDishMutation } from "@/queries/dish";
 import { Dish } from "@/types/dish";
 
-interface Props {
+type Props = {
   dish: Dish | null;
   setDish: (value: Dish | null) => void;
-}
+};
 
 export default function DeleteDish({ dish, setDish }: Props) {
   const { mutateAsync, isPending } = useDeleteDishMutation();

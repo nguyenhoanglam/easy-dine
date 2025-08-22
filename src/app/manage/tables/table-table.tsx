@@ -13,12 +13,11 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { useSearchParams } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
 import AddTable from "@/app/manage/tables/add-table";
 import EditTable from "@/app/manage/tables/edit-table";
-import AutoPagination from "@/components/auto-pagination";
+import PaginationControl from "@/components/pagination-control";
 import { TableQRCode } from "@/components/table-qr-code";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,7 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getTableQueryData, getVietnameseTableStatus } from "@/lib/utils";
+import { getTableQueryResult, getVietnameseTableStatus } from "@/lib/utils";
 import { useTableListQuery } from "@/queries/table";
 import { Table as TableType } from "@/types/table";
 
@@ -137,24 +136,20 @@ export const columns: ColumnDef<TableType>[] = [
 ];
 
 export default function TableTable() {
-  const searchParam = useSearchParams();
-  const page = Number(searchParam.get("page") || 1);
-  const pageIndex = page - 1;
-
   const [tableIdToEdit, setTableIdToEdit] = useState<number | undefined>();
   const [tableToDelete, setTableToDelete] = useState<TableType | null>(null);
-
-  const tableListQuery = useTableListQuery();
-  const data = getTableQueryData(tableListQuery);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [pagination, setPagination] = useState({
-    pageIndex,
+    pageIndex: 0,
     pageSize: PAGE_SIZE,
   });
+
+  const tableListQuery = useTableListQuery();
+  const { data, totalItem } = getTableQueryResult(tableListQuery);
 
   const table = useReactTable({
     data,
@@ -169,6 +164,7 @@ export default function TableTable() {
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
     autoResetPageIndex: false,
+    rowCount: totalItem,
     state: {
       sorting,
       columnFilters,
@@ -177,13 +173,6 @@ export default function TableTable() {
       pagination,
     },
   });
-
-  useEffect(() => {
-    table.setPagination({
-      pageIndex,
-      pageSize: PAGE_SIZE,
-    });
-  }, [table, pageIndex]);
 
   return (
     <TableTableContext.Provider
@@ -266,13 +255,16 @@ export default function TableTable() {
           <div className="text-xs text-muted-foreground py-4 flex-1 ">
             Hiển thị{" "}
             <strong>{table.getPaginationRowModel().rows.length}</strong> trong{" "}
-            <strong>{data.length}</strong> kết quả
+            <strong>{totalItem}</strong> kết quả
           </div>
           <div>
-            <AutoPagination
+            <PaginationControl
               page={table.getState().pagination.pageIndex + 1}
-              totalPage={table.getPageCount()}
-              pathname="/manage/tables"
+              pageSize={PAGE_SIZE}
+              totalItem={totalItem}
+              onPageChange={(page) => {
+                setPagination((prev) => ({ ...prev, pageIndex: page - 1 }));
+              }}
             />
           </div>
         </div>

@@ -5,11 +5,11 @@ import { useEffect, useRef } from "react";
 
 import { getTableLink } from "@/lib/utils";
 
-interface Props {
+type Props = {
   token: string;
   tableNumber: number;
   width?: number;
-}
+};
 
 export const TableQRCode = ({ token, tableNumber, width = 250 }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);

@@ -12,10 +12,10 @@ import { showResponseError, showResponseSuccess } from "@/lib/utils";
 import { useDeleteTableMutation } from "@/queries/table";
 import { Table } from "@/types/table";
 
-interface Props {
+type Props = {
   table: Table | null;
   setTable: (value: Table | null) => void;
-}
+};
 
 export default function DeleteTable({ table, setTable }: Props) {
   const { mutateAsync, isPending } = useDeleteTableMutation();

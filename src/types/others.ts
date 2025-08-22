@@ -21,3 +21,8 @@ export type PageMetadata = {
   imageUrl?: string;
   pathname: string;
 };
+
+export type DateFormatPattern =
+  | "HH:mm:ss dd/MM/yyyy"
+  | "HH:mm:ss"
+  | "yyyy-MM-dd'T'HH:mm";

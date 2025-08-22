@@ -1,7 +1,11 @@
 import z from "zod";
 
-import { OrderStatusValues } from "@/lib/constants";
-import { payGuestOrdersSchema, updateGuestOrderSchema } from "@/schemas/order";
+import { OrderStatus } from "@/lib/constants";
+import {
+  createOrdersSchema,
+  getOrderListQueryParamsSchema,
+  updateOrderSchema,
+} from "@/schemas/order";
 import { Account } from "@/types/account";
 import { DishSnapshot } from "@/types/dish";
 import { Guest } from "@/types/guest";
@@ -17,17 +21,29 @@ export type Order = {
   quantity: number;
   orderHandlerId: number | null;
   orderHandler: Account | null;
-  status: typeof OrderStatusValues;
+  status: (typeof OrderStatus)[keyof typeof OrderStatus];
   createdAt: Date;
   updatedAt: Date;
 };
+
+export type GetOrderListQueryParams = z.infer<
+  typeof getOrderListQueryParamsSchema
+>;
 
 export type GetOrderListResData = Order[];
 
 export type GetOrderDetailResData = Order & { table: Table };
 
-export type UpdateOrderReqBody = z.infer<typeof updateGuestOrderSchema>;
+export type CreateOrderReqBody = z.infer<typeof createOrdersSchema>;
+
+export type CreateOrderResData = Order[];
+
+export type UpdateOrderReqBody = z.infer<typeof updateOrderSchema>;
 
 export type UpdateOrderResData = Order;
 
-export type PayGuestOrdersReqBody = z.infer<typeof payGuestOrdersSchema>;
+export type PayGuestOrdersReqBody = {
+  guestId: number;
+};
+
+export type PayGuestOrdersResData = Order[];

@@ -1,18 +1,26 @@
 "use client";
 
 import Image from "next/image";
-import React, { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 
 import Quantity from "@/app/guest/menu/quantity";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
+import { DishStatus } from "@/lib/constants";
+import { cn, formatCurrency, showResponseError } from "@/lib/utils";
 import { useDishListQuery } from "@/queries/dish";
+import { useGuestCreateOrdersMutation } from "@/queries/guest";
 import { GuestCreateOrdersReqBody } from "@/types/guest";
 
 export default function MenuOrders() {
+  const router = useRouter();
   const [orders, setOrders] = useState<GuestCreateOrdersReqBody>([]);
+
+  const guestCreateOrdersMutation = useGuestCreateOrdersMutation();
   const { data } = useDishListQuery();
-  const dishes = data?.ok ? data.data : null;
+  const dishes = data?.ok
+    ? data.data.filter((dish) => dish.status !== DishStatus.Hidden)
+    : null;
 
   const totalPrice = useMemo(() => {
     if (dishes) {
@@ -48,43 +56,63 @@ export default function MenuOrders() {
     });
   };
 
+  const handleOrder = async () => {
+    const response = await guestCreateOrdersMutation.mutateAsync(orders);
+
+    if (!response.ok) {
+      showResponseError(response);
+      return;
+    }
+
+    router.push("/guest/orders");
+  };
+
   return (
     <>
-      <div className="max-w-[400px] mx-auto space-y-4">
-        <h1 className="text-center text-xl font-bold">🍕 Menu quán</h1>
-        {dishes.map(({ name, image, description, price, id }) => (
-          <div key={id} className="flex gap-4">
-            <div className="flex-shrink-0">
-              <Image
-                src={image}
-                alt={name}
-                height={100}
-                width={100}
-                quality={100}
-                className="object-cover w-[80px] h-[80px] rounded-md"
-              />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-sm">{name}</h3>
-              <p className="text-xs">{description}</p>
-              <p className="text-xs font-semibold">{formatCurrency(price)}</p>
-            </div>
-            <div className="flex-shrink-0 ml-auto flex justify-center items-center">
-              <Quantity
-                value={
-                  orders.find((order) => order.dishId === id)?.quantity ?? 0
-                }
-                onChange={(value) => handleQuantityChange(id, value)}
-              />
-            </div>
+      {dishes.map(({ status, name, image, description, price, id }) => (
+        <div
+          key={id}
+          className={cn("flex gap-4", {
+            "pointer-events-none": status === DishStatus.Unavailable,
+          })}
+        >
+          <div className="relative flex-shrink-0">
+            {status === DishStatus.Unavailable && (
+              <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-sm">
+                Hết hàng
+              </span>
+            )}
+            <Image
+              src={image}
+              alt={name}
+              height={100}
+              width={100}
+              quality={100}
+              className="object-cover w-[80px] h-[80px] rounded-md"
+            />
           </div>
-        ))}
-        <div className="sticky bottom-0">
-          <Button className="w-full justify-between">
-            <span>Giỏ hàng · {orders.length} món</span>
-            <span>{formatCurrency(totalPrice)}</span>
-          </Button>
+          <div className="space-y-1">
+            <h3 className="text-sm">{name}</h3>
+            <p className="text-xs">{description}</p>
+            <p className="text-xs font-semibold">{formatCurrency(price)}</p>
+          </div>
+          <div className="flex-shrink-0 ml-auto flex justify-center items-center">
+            <Quantity
+              value={orders.find((order) => order.dishId === id)?.quantity ?? 0}
+              onChange={(value) => handleQuantityChange(id, value)}
+            />
+          </div>
         </div>
+      ))}
+      <div className="sticky bottom-0">
+        <Button
+          className="w-full justify-between cursor-pointer"
+          onClick={handleOrder}
+          disabled={orders.length === 0}
+        >
+          <span>Đặt hàng · {orders.length} món</span>
+          <span>{formatCurrency(totalPrice)}</span>
+        </Button>
       </div>
     </>
   );

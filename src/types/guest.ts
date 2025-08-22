@@ -1,7 +1,7 @@
 import z from "zod";
 
 import { Role } from "@/lib/constants";
-import { createGuestOrdersSchema, guestLoginSchema } from "@/schemas/guest";
+import { guestCreateOrdersSchema, guestLoginSchema } from "@/schemas/guest";
 import { Order } from "@/types/order";
 
 export type Guest = {
@@ -36,9 +36,6 @@ export type GuestRefreshTokenResData = {
 
 export type GuestGetOrderListResData = Order[];
 
-export type GuestCreateOrdersReqBody = z.infer<typeof createGuestOrdersSchema>;
+export type GuestCreateOrdersReqBody = z.infer<typeof guestCreateOrdersSchema>;
 
-export type GuestCreateOrdersResData = {
-  orderId: number;
-  message: string;
-};
+export type GuestCreateOrdersResData = Order[];

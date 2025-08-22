@@ -61,16 +61,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
-    if (isProtectedRoute(pathname) && !accessToken) {
-      const url = new URL("/refresh-token", request.url);
-      url.searchParams.set(SearchParamKey.RefreshToken, refreshToken);
-      url.searchParams.set(SearchParamKey.Redirect, pathname);
-
-      return NextResponse.redirect(url);
-    }
-
     const role = decodeToken(refreshToken)?.role;
-    // Invalid tokenf
+    // Invalid token
     if (!role) {
       deleteCookieTokens(request);
       const url = new URL("/login", request.url);

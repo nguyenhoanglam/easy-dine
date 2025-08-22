@@ -4,10 +4,10 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-interface Props {
+type Props = {
   value: number;
   onChange: (value: number) => void;
-}
+};
 
 export default function Quantity({ value, onChange }: Props) {
   return (
