@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-import { useAuthContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,7 +60,7 @@ export default function NavItems({ className }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const mounted = useMounted();
-  const { role, setRole } = useAuthContext();
+  const { role, setRole, disconnectSocket } = useAppStore();
   const logoutMutation = useLogoutMutation();
 
   if (!mounted) {
@@ -72,9 +72,12 @@ export default function NavItems({ className }: Props) {
 
     await logoutMutation.mutateAsync();
 
+    disconnectSocket();
     setRole(null);
+
     router.push("/");
   };
+
   return (
     <>
       {menuItems.map((item) => {

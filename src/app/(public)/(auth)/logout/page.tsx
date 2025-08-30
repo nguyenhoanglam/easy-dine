@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
 
-import { useAuthContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 import { getLocalStorage } from "@/helpers/storage";
 import { SearchParamKey } from "@/lib/constants";
 import { useLogoutMutation } from "@/queries/auth";
@@ -11,7 +11,7 @@ import { useLogoutMutation } from "@/queries/auth";
 function Logout() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setRole } = useAuthContext();
+  const { setRole, disconnectSocket } = useAppStore();
   const { mutateAsync } = useLogoutMutation();
   const isMutatingRef = useRef(false);
 
@@ -25,13 +25,16 @@ function Logout() {
     ) {
       isMutatingRef.current = true;
       mutateAsync().finally(() => {
+        isMutatingRef.current = false;
+        disconnectSocket();
         setRole(null);
+
         router.push("/login");
       });
     } else {
       router.push("/");
     }
-  }, [mutateAsync, refreshTokenParam, router, setRole]);
+  }, [disconnectSocket, mutateAsync, refreshTokenParam, router, setRole]);
 
   return <div>Đang đăng xuất...</div>;
 }

@@ -1,7 +1,7 @@
 import z from "zod";
 
 import { DishStatusValues } from "@/lib/constants";
-import { dateSchema, priceSchema } from "@/schemas/common";
+import { priceSchema } from "@/schemas/common";
 
 const nameSchema = z
   .string()

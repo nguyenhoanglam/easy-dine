@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import menuItems from "@/app/manage/_components/menu-items";
+import { useAppStore } from "@/components/app-provider";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -15,10 +16,18 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Role } from "@/lib/constants";
+import { useMounted } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 export default function MobileNavLinks() {
+  const { role } = useAppStore();
+  const mounted = useMounted();
   const pathname = usePathname();
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <Sheet>
@@ -39,11 +48,11 @@ export default function MobileNavLinks() {
         <nav className="grid gap-6 text-lg font-medium">
           <div className="flex items-center justify-between px-4">
             <Link
-              href="#"
+              href="/"
               className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
             >
               <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
-              <span className="sr-only">Acme Inc</span>
+              <span className="sr-only">Easy Dine</span>
             </Link>
             <SheetClose asChild>
               <Button variant="outline" size="icon">
@@ -53,8 +62,14 @@ export default function MobileNavLinks() {
             </SheetClose>
           </div>
           {menuItems.map((item, index) => {
-            const { href, title, Icon } = item;
+            const { href, title, Icon, roles } = item;
             const isActive = pathname === href;
+            const accessible =
+              role && role !== Role.Guest && roles && roles.includes(role);
+
+            if (!accessible) {
+              return null;
+            }
 
             return (
               <Link

@@ -22,6 +22,7 @@ import OrderStatistics from "@/app/manage/orders/order-statistics";
 import columns from "@/app/manage/orders/order-table-columns";
 import TableSkeleton from "@/app/manage/orders/table-skeleton";
 import { Button } from "@/components";
+import { useAppStore } from "@/components/app-provider";
 import PaginationControl from "@/components/pagination-control";
 import {
   Command,
@@ -45,7 +46,6 @@ import {
 } from "@/components/ui/table";
 import { useOrdersStatistics } from "@/helpers/order";
 import { OrderStatusValues, SocketEvent } from "@/lib/constants";
-import socket from "@/lib/socket";
 import {
   cn,
   formatDate,
@@ -104,6 +104,7 @@ const INITIAL_FROM_DATE = startOfDay(new Date());
 const INITIAL_TO_DATE = endOfDay(new Date());
 
 export default function OrderTable() {
+  const { socket } = useAppStore();
   const [fromDate, setFromDate] = useState(INITIAL_FROM_DATE);
   const [toDate, setToDate] = useState(INITIAL_TO_DATE);
   const [orderIdToEdit, setOrderIdToEdit] = useState<number>();
@@ -173,7 +174,7 @@ export default function OrderTable() {
 
   useEffect(() => {
     function onConnect() {
-      console.log("Socket connected:", socket.id);
+      console.log("Socket connected:", socket?.id);
     }
 
     function onDisconnect() {
@@ -222,24 +223,24 @@ export default function OrderTable() {
       refresh();
     }
 
-    if (socket.connected) {
+    if (socket?.connected) {
       onConnect();
     }
 
-    socket.on(SocketEvent.Connect, onConnect);
-    socket.on(SocketEvent.Disconnect, onDisconnect);
-    socket.on(SocketEvent.NewOrder, onNewOrder);
-    socket.on(SocketEvent.UpdateOrder, onOrderUpdate);
-    socket.on(SocketEvent.Payment, onPayment);
+    socket?.on(SocketEvent.Connect, onConnect);
+    socket?.on(SocketEvent.Disconnect, onDisconnect);
+    socket?.on(SocketEvent.NewOrder, onNewOrder);
+    socket?.on(SocketEvent.UpdateOrder, onOrderUpdate);
+    socket?.on(SocketEvent.Payment, onPayment);
 
     return () => {
-      socket.off(SocketEvent.Connect, onConnect);
-      socket.off(SocketEvent.Disconnect, onDisconnect);
-      socket.off(SocketEvent.NewOrder, onNewOrder);
-      socket.off(SocketEvent.UpdateOrder, onOrderUpdate);
-      socket.off(SocketEvent.Payment, onPayment);
+      socket?.off(SocketEvent.Connect, onConnect);
+      socket?.off(SocketEvent.Disconnect, onDisconnect);
+      socket?.off(SocketEvent.NewOrder, onNewOrder);
+      socket?.off(SocketEvent.UpdateOrder, onOrderUpdate);
+      socket?.off(SocketEvent.Payment, onPayment);
     };
-  }, [fromDate, , toDate, refreshOrderList]);
+  }, [fromDate, refreshOrderList, socket, toDate]);
 
   return (
     <OrderTableContext.Provider

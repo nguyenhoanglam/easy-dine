@@ -1,6 +1,7 @@
 "use server";
 
 import { getCookie, removeAuthCookie, setAuthCookie } from "@/helpers/storage";
+import { HttpStatus } from "@/lib/constants";
 import { httpClient } from "@/lib/http";
 import {
   LoginReqBody,
@@ -9,6 +10,7 @@ import {
   RefreshTokenReqBody,
   RefreshTokenResData,
 } from "@/types/auth";
+import { HttpResponse } from "@/types/http";
 
 const basePath = "/auth";
 
@@ -60,4 +62,28 @@ export async function refreshTokenAction() {
   }
 
   return response;
+}
+
+export async function setTokensToCookieAction({
+  accessToken,
+  refreshToken,
+}: {
+  accessToken: string;
+  refreshToken: string;
+}): Promise<HttpResponse> {
+  try {
+    await setAuthCookie({ accessToken, refreshToken });
+
+    return {
+      ok: true,
+      message: "Đăng nhập thành công.",
+      data: { accessToken, refreshToken },
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: HttpStatus.InternalServerError,
+      message: error instanceof Error ? error.message : "Đăng nhập thất bại.",
+    };
+  }
 }

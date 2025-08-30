@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { useAuthContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +19,7 @@ import { useLogoutMutation } from "@/queries/auth";
 
 export default function DropdownAvatar() {
   const router = useRouter();
-  const { setRole } = useAuthContext();
+  const { setRole, disconnectSocket } = useAppStore();
   const logoutMutation = useLogoutMutation();
   const profileQuery = useProfileQuery();
 
@@ -30,7 +30,9 @@ export default function DropdownAvatar() {
 
     await logoutMutation.mutateAsync();
 
+    disconnectSocket();
     setRole(null);
+
     router.push("/");
   };
 

@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import { BookX, CookingPot, HandCoins, Loader, Truck } from "lucide-react";
 import { Metadata } from "next";
 import type { FieldPath, FieldValues, UseFormSetError } from "react-hook-form";
-import { toast, ToastT } from "sonner";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
 import {
@@ -144,6 +144,16 @@ export function getTableQueryResult<T>(
   return { data: [], totalItem: 0 };
 }
 
+export function getQueryResult<T>(
+  queryResult: UseQueryResult<HttpResponse<T>>,
+): T | null {
+  if (queryResult.data && queryResult.data.ok) {
+    return queryResult.data.data;
+  }
+
+  return null;
+}
+
 /*
  * Return paginated data from query result for tables
  * If the query result is successful, it returns the paginated data.
@@ -254,4 +264,21 @@ export function getTableLink({
   tableNumber: number;
 }) {
   return env.NEXT_PUBLIC_APP_URL + "/tables/" + tableNumber + "?token=" + token;
+}
+
+export function getGoogleOauthUrl() {
+  const url = "https://accounts.google.com/o/oauth2/v2/auth";
+  const options = {
+    redirect_uri: env.NEXT_PUBLIC_GOOGLE_AUTHORIZED_REDIRECT_URI,
+    client_id: env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+    access_type: "offline",
+    response_type: "code",
+    prompt: "consent",
+    scope: [
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/userinfo.email",
+    ].join(" "),
+  };
+  const qs = new URLSearchParams(options);
+  return `${url}?${qs.toString()}`;
 }

@@ -1,13 +1,11 @@
 "use client";
 
-import { format, parse } from "date-fns";
-import { TrendingUp } from "lucide-react";
+import { parse } from "date-fns";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -18,57 +16,22 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { formatDate } from "@/lib/utils";
+import { DashboardIndicatorsResData } from "@/types/indicator";
+
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "hsl(var(--chart-1))",
+  // Định nghĩa màu sắc và nhãn cho từng chỉ số
+  revenue: {
+    label: "Doanh thu",
+    color: "var(--chart-1)",
   },
 } satisfies ChartConfig;
 
-export function RevenueLineChart() {
-  // fake 10 item
-  const chartData = [
-    {
-      date: "01/01/2024",
-      revenue: 1000,
-    },
-    {
-      date: "02/01/2024",
-      revenue: 2000,
-    },
-    {
-      date: "03/01/2024",
-      revenue: 1500,
-    },
-    {
-      date: "04/01/2024",
-      revenue: 3000,
-    },
-    {
-      date: "05/01/2024",
-      revenue: 2500,
-    },
-    {
-      date: "06/01/2024",
-      revenue: 4000,
-    },
-    {
-      date: "07/01/2024",
-      revenue: 3500,
-    },
-    {
-      date: "08/01/2024",
-      revenue: 5000,
-    },
-    {
-      date: "09/01/2024",
-      revenue: 4500,
-    },
-    {
-      date: "10/01/2024",
-      revenue: 6000,
-    },
-  ];
+type Props = {
+  data: DashboardIndicatorsResData["revenueByDate"];
+};
+
+export function RevenueLineChart({ data }: Props) {
   return (
     <Card>
       <CardHeader>
@@ -76,40 +39,45 @@ export function RevenueLineChart() {
         {/* <CardDescription>January - June 2024</CardDescription> */}
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
           <LineChart
             accessibilityLayer
-            data={chartData}
+            data={data}
             margin={{
               left: 12,
               right: 12,
             }}
           >
             <CartesianGrid vertical={false} />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent indicator="dashed" nameKey="revenue" />
+              }
+            />
             <XAxis
               dataKey="date"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => {
-                if (chartData.length < 8) {
+                if (data.length < 8) {
                   return value;
                 }
-                if (chartData.length < 33) {
+
+                if (data.length < 33) {
                   const date = parse(value, "dd/MM/yyyy", new Date());
-                  return format(date, "dd");
+                  return formatDate(date, "dd");
                 }
+
                 return "";
               }}
             />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="dashed" />}
-            />
+
             <Line
               dataKey="revenue"
               type="linear"
-              stroke="var(--color-desktop)"
+              stroke="var(--color-revenue)" // Sử dụng color từ chartConfig
               strokeWidth={2}
               dot={false}
             />

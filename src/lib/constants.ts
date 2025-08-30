@@ -15,7 +15,7 @@ export const StorageKey = {
 export const SearchParamKey = {
   Redirect: "redirect",
   RefreshToken: "refresh_token",
-  ClearTokens: "clear_tokens",
+  Token_Expired: "token_expired",
   Page: "page",
   Limit: "limit",
 };
@@ -83,4 +83,6 @@ export const SocketEvent = {
   NewOrder: "new-order",
   UpdateOrder: "update-order",
   Payment: "payment",
+  RefreshToken: "refresh-token",
+  Logout: "logout",
 } as const;

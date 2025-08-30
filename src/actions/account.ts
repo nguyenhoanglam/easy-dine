@@ -92,12 +92,12 @@ export async function createGuestAccountAction(
 }
 
 export async function getGuestListAction(params?: GuestListQueryParams) {
-  const queryParams = {
+  const queryString = createQueryString({
     fromDate: params?.fromDate?.toISOString(),
     toDate: params?.toDate?.toISOString(),
-  };
+  });
 
   return httpClient.get<GetGuestListResData>(
-    `${basePath}/guests${createQueryString(queryParams)}`,
+    `${basePath}/guests${queryString}`,
   );
 }

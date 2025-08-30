@@ -2,16 +2,13 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from "react";
+import type { Socket } from "socket.io-client";
+import { create } from "zustand";
 
 import RefreshToken from "@/components/refresh-token";
+import SocketListener from "@/components/socket-listener";
 import { getLocalStorage, removeAuthLocalStorage } from "@/helpers/storage";
+import { createSocket } from "@/lib/socket";
 import { decodeToken } from "@/lib/utils";
 import { Role } from "@/types/others";
 
@@ -23,58 +20,51 @@ const queryClient = new QueryClient({
   },
 });
 
-type AuthContextType = {
+type AppState = {
   role: Role | null;
   setRole: (role: Role | null) => void;
+  socket: Socket | undefined;
+  setSocket: (socket?: Socket) => void;
+  disconnectSocket: () => void;
 };
 
-const AuthContext = createContext<AuthContextType>({
-  role: null,
-  setRole: () => {},
+function getInitialStateValues() {
+  const accessToken = getLocalStorage("access_token");
+  const refreshToken = getLocalStorage("refresh_token");
+  const role = refreshToken ? decodeToken(refreshToken)?.role || null : null;
+  const socket = accessToken ? createSocket(accessToken) : undefined;
+
+  return { role, socket };
+}
+
+export const useAppStore = create<AppState>()((set) => {
+  const { role, socket } = getInitialStateValues();
+
+  return {
+    role,
+    socket,
+    setRole: (role) => {
+      set({ role });
+      if (!role) {
+        removeAuthLocalStorage();
+      }
+    },
+    setSocket: (socket) => set({ socket }),
+    disconnectSocket: () =>
+      set((state) => {
+        state.socket?.disconnect();
+        return { socket: undefined };
+      }),
+  };
 });
 
-export const useAuthContext = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuthContext must be used within an AppProvider");
-  }
-
-  return context;
-};
-
 export default function AppProvider({ children }: React.PropsWithChildren) {
-  const [role, setUserRole] = useState<Role | null>(() => {
-    const refreshToken = getLocalStorage("refresh_token");
-
-    if (!refreshToken) {
-      return null;
-    }
-
-    return decodeToken(refreshToken)?.role || null;
-  });
-
-  const setRole = useCallback((role: Role | null) => {
-    setUserRole(role);
-
-    if (!role) {
-      removeAuthLocalStorage();
-    }
-  }, []);
-
-  const authContextValue = useMemo(() => {
-    return {
-      role,
-      setRole,
-    };
-  }, [role, setRole]);
-
   return (
-    <AuthContext.Provider value={authContextValue}>
-      <QueryClientProvider client={queryClient}>
-        {children}
-        <RefreshToken />
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </AuthContext.Provider>
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <RefreshToken />
+      <SocketListener />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }

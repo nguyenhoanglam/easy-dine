@@ -1,13 +1,35 @@
 "use client";
+import { endOfDay, startOfDay } from "date-fns";
+import { useState } from "react";
+
 import { DishBarChart } from "@/app/manage/dashboard/dish-bar-chart";
 import { RevenueLineChart } from "@/app/manage/dashboard/revenue-line-chart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate, getQueryResult } from "@/lib/utils";
+import { useDashboardIndicatorsQuery } from "@/queries/indicator";
+
+const INITIAL_FROM_DATE = startOfDay(new Date());
+const INITIAL_TO_DATE = endOfDay(new Date());
 
 export default function DashboardMain() {
-  const resetDateFilter = () => {};
+  const [fromDate, setFromDate] = useState(INITIAL_FROM_DATE);
+  const [toDate, setToDate] = useState(INITIAL_TO_DATE);
+
+  const indicatorsQuery = useDashboardIndicatorsQuery({ fromDate, toDate });
+  const data = getQueryResult(indicatorsQuery);
+  const revenue = data?.revenue ?? 0;
+  const guestCount = data?.guestCount ?? 0;
+  const orderCount = data?.orderCount ?? 0;
+  const servingTableCount = data?.servingTableCount ?? 0;
+  const revenueByDate = data?.revenueByDate ?? [];
+  const dishIndicator = data?.dishIndicator ?? [];
+
+  const resetDateFilter = () => {
+    setFromDate(INITIAL_FROM_DATE);
+    setToDate(INITIAL_TO_DATE);
+  };
 
   return (
     <div className="space-y-4">
@@ -18,11 +40,18 @@ export default function DashboardMain() {
             type="datetime-local"
             placeholder="Từ ngày"
             className="text-sm"
+            value={formatDate(fromDate, "yyyy-MM-dd'T'HH:mm")}
+            onChange={(event) => setFromDate(new Date(event.target.value))}
           />
         </div>
         <div className="flex items-center">
           <span className="mr-2">Đến</span>
-          <Input type="datetime-local" placeholder="Đến ngày" />
+          <Input
+            type="datetime-local"
+            placeholder="Đến ngày"
+            value={formatDate(toDate, "yyyy-MM-dd'T'HH:mm")}
+            onChange={(event) => setToDate(new Date(event.target.value))}
+          />
         </div>
         <Button className="" variant={"outline"} onClick={resetDateFilter}>
           Reset
@@ -48,7 +77,7 @@ export default function DashboardMain() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{formatCurrency(revenue)}</div>
           </CardContent>
         </Card>
         <Card>
@@ -70,7 +99,7 @@ export default function DashboardMain() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{guestCount}</div>
             <p className="text-xs text-muted-foreground">Gọi món</p>
           </CardContent>
         </Card>
@@ -92,7 +121,7 @@ export default function DashboardMain() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{orderCount}</div>
             <p className="text-xs text-muted-foreground">Đã thanh toán</p>
           </CardContent>
         </Card>
@@ -115,16 +144,16 @@ export default function DashboardMain() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{servingTableCount}</div>
           </CardContent>
         </Card>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="lg:col-span-4">
-          <RevenueLineChart />
+          <RevenueLineChart data={revenueByDate} />
         </div>
         <div className="lg:col-span-3">
-          <DishBarChart />
+          <DishBarChart data={dishIndicator} />
         </div>
       </div>
     </div>

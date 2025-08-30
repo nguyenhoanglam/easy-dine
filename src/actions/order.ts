@@ -21,17 +21,14 @@ const Tags = {
 };
 
 export async function getOrderListAction(params: GetOrderListQueryParams) {
-  const queryParams = {
+  const queryString = createQueryString({
     fromDate: params.fromDate?.toISOString(),
     toDate: params.toDate?.toISOString(),
-  };
+  });
 
-  return httpClient.get<GetOrderListResData>(
-    `${basePath}${createQueryString(queryParams)}`,
-    {
-      next: { tags: [Tags.Orders] },
-    },
-  );
+  return httpClient.get<GetOrderListResData>(`${basePath}${queryString}`, {
+    next: { tags: [Tags.Orders] },
+  });
 }
 
 export async function getOrderDetailAction(orderId: number) {

@@ -1,12 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components";
-import { useAuthContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 import {
   Card,
   CardContent,
@@ -19,18 +20,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setAuthLocalStorage } from "@/helpers/storage";
 import { SearchParamKey } from "@/lib/constants";
-import { showResponseError, showResponseSuccess } from "@/lib/utils";
+import { createSocket } from "@/lib/socket";
+import {
+  getGoogleOauthUrl,
+  showResponseError,
+  showResponseSuccess,
+} from "@/lib/utils";
 import { useLoginMutation } from "@/queries/auth";
 import { loginRequestSchema } from "@/schemas/auth";
 import { LoginReqBody } from "@/types/auth";
 
 function Login() {
+  const { setRole, setSocket } = useAppStore();
   const router = useRouter();
-  const { setRole } = useAuthContext();
   const loginMutation = useLoginMutation();
   const searchParams = useSearchParams();
 
-  const clearTokens = searchParams.get(SearchParamKey.ClearTokens);
+  const tokenExpired = searchParams.get(SearchParamKey.Token_Expired);
 
   const form = useForm<LoginReqBody>({
     resolver: zodResolver(loginRequestSchema),
@@ -41,10 +47,10 @@ function Login() {
   });
 
   useEffect(() => {
-    if (clearTokens === "true") {
+    if (tokenExpired === "true") {
       setRole(null);
     }
-  }, [clearTokens, setRole]);
+  }, [tokenExpired, setRole]);
 
   const onSubmit = async (data: LoginReqBody) => {
     const response = await loginMutation.mutateAsync(data);
@@ -58,6 +64,8 @@ function Login() {
     setAuthLocalStorage({ accessToken, refreshToken, account });
     setRole(account.role);
     showResponseSuccess(response);
+    setSocket(createSocket(accessToken));
+
     router.push("/manage/dashboard");
   };
 
@@ -124,14 +132,16 @@ function Login() {
               >
                 Đăng nhập
               </Button>
-              <Button
-                className="w-full"
-                type="button"
-                variant="outline"
-                loading={loginMutation.isPending}
-              >
-                Đăng nhập với Google
-              </Button>
+              <Link href={getGoogleOauthUrl()}>
+                <Button
+                  className="w-full"
+                  type="button"
+                  variant="outline"
+                  disabled={loginMutation.isPending}
+                >
+                  Đăng nhập với Google
+                </Button>
+              </Link>
             </div>
           </form>
         </Form>

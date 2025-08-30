@@ -5,32 +5,48 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import menuItems from "@/app/manage/_components/menu-items";
+import { useAppStore } from "@/components/app-provider";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Role } from "@/lib/constants";
+import { useMounted } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 export default function NavLinks() {
+  const { role } = useAppStore();
+  const mounted = useMounted();
   const pathname = usePathname();
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <TooltipProvider>
       <aside className="fixed hidden flex-col w-14 inset-y-0 left-0 z-10 border-r bg-background sm:flex">
         <nav className="flex flex-col items-center gap-4 px-2 py-4">
           <Link
-            href="#"
+            href="/"
             className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
           >
             <Package2 className="h-4 w-4 transition-all group-hover:scale-110" />
-            <span className="sr-only">Acme Inc</span>
+            <span className="sr-only">Easy Dine</span>
           </Link>
 
           {menuItems.map((item, index) => {
-            const { href, title, Icon } = item;
+            const { href, title, Icon, roles } = item;
             const isActive = pathname === href;
+
+            const accessible =
+              role && role !== Role.Guest && roles && roles.includes(role);
+
+            if (!accessible) {
+              return null;
+            }
 
             return (
               <Tooltip key={index}>

@@ -5,9 +5,9 @@ import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components";
+import { useAppStore } from "@/components/app-provider";
 import { Badge } from "@/components/ui/badge";
 import { OrderStatus, SocketEvent } from "@/lib/constants";
-import socket from "@/lib/socket";
 import { formatCurrency, getVietnameseOrderStatus } from "@/lib/utils";
 import { useGuestOrderListQuery } from "@/queries/guest";
 import { PayGuestOrdersResData, UpdateOrderResData } from "@/types/order";
@@ -28,6 +28,7 @@ const INITIAL_SUMMARY: Summary = {
 };
 
 export default function OrderList() {
+  const { socket } = useAppStore();
   const { data, refetch } = useGuestOrderListQuery();
   const orders = data?.ok ? data.data : null;
 
@@ -71,7 +72,7 @@ export default function OrderList() {
 
   useEffect(() => {
     function onConnect() {
-      console.log("Socket connected:", socket.id);
+      console.log("Socket connected:", socket?.id);
     }
 
     function onDisconnect() {
@@ -100,22 +101,22 @@ export default function OrderList() {
       refetch();
     }
 
-    if (socket.connected) {
+    if (socket?.connected) {
       onConnect();
     }
 
-    socket.on(SocketEvent.Connect, onConnect);
-    socket.on(SocketEvent.Disconnect, onDisconnect);
-    socket.on(SocketEvent.UpdateOrder, onOrderUpdate);
-    socket.on(SocketEvent.Payment, onPayment);
+    socket?.on(SocketEvent.Connect, onConnect);
+    socket?.on(SocketEvent.Disconnect, onDisconnect);
+    socket?.on(SocketEvent.UpdateOrder, onOrderUpdate);
+    socket?.on(SocketEvent.Payment, onPayment);
 
     return () => {
-      socket.off(SocketEvent.Connect, onConnect);
-      socket.off(SocketEvent.Disconnect, onDisconnect);
-      socket.off(SocketEvent.UpdateOrder, onOrderUpdate);
-      socket.off(SocketEvent.Payment, onPayment);
+      socket?.off(SocketEvent.Connect, onConnect);
+      socket?.off(SocketEvent.Disconnect, onDisconnect);
+      socket?.off(SocketEvent.UpdateOrder, onOrderUpdate);
+      socket?.off(SocketEvent.Payment, onPayment);
     };
-  }, [refetch]);
+  }, [refetch, socket]);
 
   if (!orders) {
     return <div className="text-center">Loading</div>;

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { SearchParamKey, StorageKey } from "@/lib/constants";
+import { Role, SearchParamKey, StorageKey } from "@/lib/constants";
 
 import { decodeToken } from "./lib/utils";
 
 const AUTH_ROUTES = ["/login"];
 const MANAGER_ROUTES = ["/manage"];
+const OWNER_ROUTES = ["/manage/accounts"];
 const GUEST_ROUTES = ["/guest"];
 const PROTECTED_ROUTES = [...MANAGER_ROUTES, ...GUEST_ROUTES];
 
@@ -19,6 +20,10 @@ function isAuthRoute(pathname: string) {
 
 function isManagerRoute(pathname: string) {
   return MANAGER_ROUTES.some((route) => getRouteRegex(route).test(pathname));
+}
+
+function isOwnerRoute(pathname: string) {
+  return OWNER_ROUTES.some((route) => getRouteRegex(route).test(pathname));
 }
 
 function isGuestRoute(pathname: string) {
@@ -43,7 +48,7 @@ export async function middleware(request: NextRequest) {
   if (isProtectedRoute(pathname)) {
     if (!refreshToken) {
       const url = new URL("/login", request.url);
-      url.searchParams.set(SearchParamKey.ClearTokens, "true");
+      url.searchParams.set(SearchParamKey.Token_Expired, "true");
       return NextResponse.redirect(url);
     }
 
@@ -66,13 +71,14 @@ export async function middleware(request: NextRequest) {
     if (!role) {
       deleteCookieTokens(request);
       const url = new URL("/login", request.url);
-      url.searchParams.set(SearchParamKey.ClearTokens, "true");
+      url.searchParams.set(SearchParamKey.Token_Expired, "true");
       return NextResponse.redirect(url);
     }
 
     if (
-      (role === "Guest" && isManagerRoute(pathname)) ||
-      (role !== "Guest" && isGuestRoute(pathname))
+      (role === Role.Guest && isManagerRoute(pathname)) ||
+      (role !== Role.Guest && isGuestRoute(pathname)) ||
+      (role !== Role.Owner && isOwnerRoute(pathname))
     ) {
       return NextResponse.redirect(new URL("/", request.url));
     }

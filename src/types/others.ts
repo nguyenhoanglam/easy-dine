@@ -25,4 +25,5 @@ export type PageMetadata = {
 export type DateFormatPattern =
   | "HH:mm:ss dd/MM/yyyy"
   | "HH:mm:ss"
-  | "yyyy-MM-dd'T'HH:mm";
+  | "yyyy-MM-dd'T'HH:mm"
+  | "dd";

@@ -2,9 +2,9 @@ import "./globals.css";
 
 import type { Metadata } from "next";
 import { Roboto, Roboto_Mono } from "next/font/google";
-import { Toaster } from "sonner";
 
 import { AppProvider, ThemeProvider } from "@/components";
+import { Toaster } from "@/components/ui/sonner";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -37,8 +37,8 @@ export default function Layout({
           enableSystem
           disableTransitionOnChange
         >
-          <AppProvider>{children}</AppProvider>
           <Toaster />
+          <AppProvider>{children}</AppProvider>
         </ThemeProvider>
       </body>
     </html>

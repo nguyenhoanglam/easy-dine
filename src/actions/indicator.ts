@@ -2,19 +2,22 @@
 
 import { httpClient } from "@/lib/http";
 import { createQueryString } from "@/lib/utils";
-import { DashboardIndicatorQueryParams } from "@/types/indicator";
+import {
+  DashboardIndicatorsQueryParams,
+  DashboardIndicatorsResData,
+} from "@/types/indicator";
 
 const basePath = "/indicators";
 
-export async function getDashboardIndicatorAction(
-  params: DashboardIndicatorQueryParams,
+export async function getDashboardIndicatorsAction(
+  params: DashboardIndicatorsQueryParams,
 ) {
-  const queryParams = {
-    fromDate: params.fromDate?.toISOString(),
-    toDate: params.toDate?.toISOString(),
-  };
+  const queryString = createQueryString({
+    fromDate: params.fromDate.toISOString(),
+    toDate: params.toDate.toISOString(),
+  });
 
-  return httpClient.get(
-    `${basePath}/dashboard${createQueryString(queryParams)}`,
+  return httpClient.get<DashboardIndicatorsResData>(
+    `${basePath}/dashboard${queryString}`,
   );
 }

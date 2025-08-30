@@ -6,19 +6,20 @@ import { Suspense, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components";
-import { useAuthContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setAuthLocalStorage } from "@/helpers/storage";
+import { createSocket } from "@/lib/socket";
 import { showResponseError } from "@/lib/utils";
 import { useGuestLoginMutation } from "@/queries/guest";
 import { guestLoginSchema } from "@/schemas/guest";
 import { GuestLoginReqBody } from "@/types/guest";
 
 function GuestLogin() {
-  const { setRole } = useAuthContext();
+  const { setRole, setSocket } = useAppStore();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -55,6 +56,8 @@ function GuestLogin() {
     const { accessToken, refreshToken } = response.data;
     setAuthLocalStorage({ accessToken, refreshToken });
     setRole(response.data.guest.role);
+    setSocket(createSocket(accessToken));
+
     router.push("/guest/menu");
   };
 

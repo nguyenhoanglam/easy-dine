@@ -14,9 +14,11 @@ let refreshTokenActionPromise: RefreshTokenActionPromise = null;
 export async function checkAndRefreshToken({
   onSuccess,
   onError,
+  force,
 }: {
   onSuccess?: () => void;
   onError?: () => void;
+  force?: boolean;
 }) {
   try {
     const accessToken = getLocalStorage("access_token");
@@ -38,8 +40,9 @@ export async function checkAndRefreshToken({
     }
 
     if (
+      force ||
       decodedAccessToken.exp - now <
-      (decodedAccessToken.exp - decodedAccessToken.iat) / 3
+        (decodedAccessToken.exp - decodedAccessToken.iat) / 3
     ) {
       // If the action is already in progress, use the existing one
       // to avoid multiple requests when navigate to other pages
