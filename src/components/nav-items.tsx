@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { useAppStore } from "@/components/app-provider";
 import {
@@ -15,38 +14,39 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useMounted } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 import { useLogoutMutation } from "@/queries/auth";
-import { Role } from "@/types/others";
+import { I18nNavItemsKeys, Role } from "@/types/others";
 
 const menuItems: {
-  title: string;
+  key: I18nNavItemsKeys;
   href: string;
   roles?: Role[];
   hideWhenLoggedIn?: boolean;
 }[] = [
   {
-    title: "Trang chủ",
+    key: "home",
     href: "/",
   },
   {
-    title: "Menu",
+    key: "menu",
     href: "/guest/menu",
     roles: ["Guest"],
   },
   {
-    title: "Đơn hàng",
+    key: "orders",
     href: "/guest/orders",
     roles: ["Guest"],
   },
   {
-    title: "Đăng nhập",
+    key: "login",
     href: "/login",
     hideWhenLoggedIn: true,
   },
   {
-    title: "Quản lý",
+    key: "manage",
     href: "/manage/dashboard",
     roles: ["Owner", "Employee"],
   },
@@ -57,6 +57,7 @@ type Props = {
 };
 
 export default function NavItems({ className }: Props) {
+  const t = useTranslations("NavItems");
   const router = useRouter();
   const pathname = usePathname();
   const mounted = useMounted();
@@ -81,7 +82,7 @@ export default function NavItems({ className }: Props) {
   return (
     <>
       {menuItems.map((item) => {
-        const { title, href, roles, hideWhenLoggedIn } = item;
+        const { key, href, roles, hideWhenLoggedIn } = item;
 
         const accessible = !roles || (role && roles.includes(role));
         const hidden = role && hideWhenLoggedIn;
@@ -98,25 +99,27 @@ export default function NavItems({ className }: Props) {
               "text-foreground": pathname === href,
             })}
           >
-            {title}
+            {key !== "logoutDialog" ? t(key) : key}
           </Link>
         );
       })}
       {role && (
         <AlertDialog>
           <AlertDialogTrigger>
-            <div className={cn(className, "cursor-pointer")}>Đăng xuất</div>
+            <div className={cn(className, "cursor-pointer")}>{t("logout")}</div>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Bạn có muốn đăng xuất không?</AlertDialogTitle>
+              <AlertDialogTitle>{t("logoutDialog.title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Đăng xuất có thể làm mất hóa đơn của bạn.
+                {t("logoutDialog.content")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Hủy</AlertDialogCancel>
-              <AlertDialogAction onClick={handleLogout}>OK</AlertDialogAction>
+              <AlertDialogCancel>{t("logoutDialog.cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleLogout}>
+                {t("logoutDialog.confirm")}
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

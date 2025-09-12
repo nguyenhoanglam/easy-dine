@@ -1,0 +1,42 @@
+{
+  "Schema": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "invalidPassword": "Password must contain between 6 and 100 characters"
+  },
+  "HomePage": {
+    "title": "Easy Dine restaurant",
+    "description": "Scan the QR code to order"
+  },
+  "LoginPage": {
+    "title": "Login"
+  },
+  "DishDetailPage": {
+    "notFound": "Dish not found"
+  },
+  "RefreshTokenPage": {
+    "title": "Refreshing...",
+    "description": "Please wait..."
+  },
+  "NavItems": {
+    "home": "Home",
+    "menu": "Menu",
+    "manage": "Manage",
+    "orders": "Orders",
+    "login": "Login",
+    "logout": "Logout",
+    "logoutDialog": {
+      "title": "Are you sure you want to logout?",
+      "content": " Logging out may result in loss of your orders.",
+      "cancel": "Cancel",
+      "confirm": "OK"
+    }
+  },
+  "NavLinks": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "tables": "Tables",
+    "dishes": "Dishes",
+    "employees": "Employees"
+  }
+}

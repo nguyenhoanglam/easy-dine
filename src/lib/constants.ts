@@ -10,6 +10,7 @@ export const StorageKey = {
   AccessToken: "access_token",
   RefreshToken: "refresh_token",
   Account: "account",
+  Locale: "NEXT_LOCALE",
 } as const;
 
 export const SearchParamKey = {

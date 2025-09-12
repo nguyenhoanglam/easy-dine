@@ -1,8 +1,8 @@
 "use server";
 
-import { getCookie, removeAuthCookie, setAuthCookie } from "@/helpers/storage";
 import { HttpStatus } from "@/lib/constants";
 import { httpClient } from "@/lib/http";
+import { getCookie, removeAuthCookie, setAuthCookie } from "@/services/storage";
 import {
   LoginReqBody,
   LoginResData,

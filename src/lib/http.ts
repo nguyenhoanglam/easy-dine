@@ -1,9 +1,10 @@
 import chalk from "chalk";
-import { redirect } from "next/navigation";
 
-import { getCookie } from "@/helpers/storage";
+import { defaultLocale, Locale } from "@/i18n/config";
+import { redirect } from "@/i18n/navigation";
 import { HttpStatus, SearchParamKey } from "@/lib/constants";
 import { env } from "@/lib/env";
+import { getCookie } from "@/services/storage";
 import {
   EntityError,
   HttpError,
@@ -263,7 +264,12 @@ class HttpClient {
         // Unauthorized error
         if (error instanceof Error && error.message === "UNAUTHORIZED") {
           const refreshToken = await getCookie("refresh_token");
-          redirect(`/logout?${SearchParamKey.RefreshToken}=${refreshToken}`);
+          const locale = (await getCookie("NEXT_LOCALE")) || defaultLocale;
+
+          redirect({
+            href: `/logout?${SearchParamKey.RefreshToken}=${refreshToken}`,
+            locale: locale as Locale,
+          });
         }
 
         // Network error

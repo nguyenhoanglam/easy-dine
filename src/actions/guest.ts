@@ -1,7 +1,7 @@
 "use server";
 
-import { getCookie, setAuthCookie } from "@/helpers/storage";
 import { httpClient } from "@/lib/http";
+import { getCookie, setAuthCookie } from "@/services/storage";
 import {
   GuestCreateOrdersReqBody,
   GuestCreateOrdersResData,

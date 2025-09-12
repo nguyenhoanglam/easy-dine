@@ -1,8 +1,8 @@
 "use server";
 
-import { setAuthCookie } from "@/helpers/storage";
 import { httpClient } from "@/lib/http";
 import { createQueryString } from "@/lib/utils";
+import { setAuthCookie } from "@/services/storage";
 import {
   ChangePasswordReqBody,
   ChangePasswordResData,

@@ -1,7 +1,7 @@
-import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { useAppStore } from "@/components/app-provider";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { SocketEvent } from "@/lib/constants";
 import { useLogoutMutation } from "@/queries/auth";
 

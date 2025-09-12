@@ -1,11 +1,11 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { useAppStore } from "@/components/app-provider";
-import { checkAndRefreshToken } from "@/helpers/auth";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { SocketEvent } from "@/lib/constants";
+import { checkAndRefreshToken } from "@/services/auth";
 
 const AUTH_ROUTES = ["/login", "/logout", "/refresh-token"];
 const INTERVAL_TIME = 5 * 60 * 1000; // 5 minutes - change this value as needed

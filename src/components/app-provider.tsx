@@ -7,9 +7,9 @@ import { create } from "zustand";
 
 import RefreshToken from "@/components/refresh-token";
 import SocketListener from "@/components/socket-listener";
-import { getLocalStorage, removeAuthLocalStorage } from "@/helpers/storage";
 import { createSocket } from "@/lib/socket";
 import { decodeToken } from "@/lib/utils";
+import { getLocalStorage, removeAuthLocalStorage } from "@/services/storage";
 import { Role } from "@/types/others";
 
 const queryClient = new QueryClient({

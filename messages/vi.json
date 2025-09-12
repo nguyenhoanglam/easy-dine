@@ -1,0 +1,42 @@
+{
+  "Schema": {
+    "required": "Trường này là bắt buộc",
+    "invalidEmail": "Email không hợp lệ",
+    "invalidPassword": "Mật khẩu phải có từ 6 đến 100 ký tự"
+  },
+  "HomePage": {
+    "title": "Nhà hàng Easy Dine",
+    "description": "Quét mã và gọi món"
+  },
+  "LoginPage": {
+    "title": "Đăng nhập"
+  },
+  "DishDetailPage": {
+    "notFound": "Món ăn không tồn tại"
+  },
+  "RefreshTokenPage": {
+    "title": "Đang làm mới...",
+    "description": "Vui lòng chờ..."
+  },
+  "NavItems": {
+    "home": "Trang chủ",
+    "menu": "Món ăn",
+    "manage": "Quản lý",
+    "orders": "Đơn hàng",
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "logoutDialog": {
+      "title": "Bạn có chắc muốn đăng xuất không?",
+      "content": "Đăng xuất có thể làm mất hóa đơn của bạn.",
+      "cancel": "Hủy",
+      "confirm": "Đồng ý"
+    }
+  },
+  "NavLinks": {
+    "dashboard": "Dashboard",
+    "orders": "Đơn hàng",
+    "tables": "Bàn ăn",
+    "dishes": "Món ăn",
+    "employees": "Nhân viên"
+  }
+}

@@ -2,13 +2,17 @@ import { UseQueryResult } from "@tanstack/react-query";
 import { type ClassValue, clsx } from "clsx";
 import currency from "currency.js";
 import { format } from "date-fns";
-import jwt from "jsonwebtoken";
+import { decodeJwt } from "jose";
 import { BookX, CookingPot, HandCoins, Loader, Truck } from "lucide-react";
 import { Metadata } from "next";
+import { NestedKeyOf } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import type { FieldPath, FieldValues, UseFormSetError } from "react-hook-form";
+import slugify from "slugify";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
+import { Locale } from "@/i18n/config";
 import {
   DishStatus,
   HttpStatus,
@@ -18,7 +22,13 @@ import {
 import { env } from "@/lib/env";
 import { HttpError, HttpResponse } from "@/types/http";
 import { TokenPayload } from "@/types/jwt";
-import { DateFormatPattern, PageMetadata, PaginatedData } from "@/types/others";
+import {
+  DateFormatPattern,
+  LayoutProps,
+  PageMetadata,
+  PageProps,
+  PaginatedData,
+} from "@/types/others";
 
 /*
  * UI
@@ -55,13 +65,14 @@ export function showResponseError<T extends FieldValues>(
 }
 
 /*
- * Metadata
+ * Metadata can be generated only in server components
  */
 export function createMetadata({
   title,
   description,
   imageUrl,
   pathname,
+  robots,
 }: PageMetadata): Metadata {
   const url = `${env.NEXT_PUBLIC_APP_URL}${pathname}`;
 
@@ -80,13 +91,13 @@ export function createMetadata({
     alternates: {
       canonical: url,
     },
-    robots: { index: false, follow: false },
+    ...(robots && { robots }),
   };
 }
 
 export function decodeToken(token: string) {
   try {
-    return jwt.decode(token) as TokenPayload;
+    return decodeJwt<TokenPayload>(token);
   } catch (error) {
     console.error("Failed to decode JWT token:", error);
     return null;
@@ -281,4 +292,12 @@ export function getGoogleOauthUrl() {
   };
   const qs = new URLSearchParams(options);
   return `${url}?${qs.toString()}`;
+}
+
+export function generateSlugUrl({ name, id }: { name: string; id: number }) {
+  return `${slugify(name)}-i.${id}`;
+}
+
+export function parseIdFromSlugUrl(slug: string) {
+  return Number(slug.split("-i.").pop());
 }

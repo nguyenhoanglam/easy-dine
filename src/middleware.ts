@@ -1,14 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
 
+import { routing } from "@/i18n/routing";
 import { Role, SearchParamKey, StorageKey } from "@/lib/constants";
 
 import { decodeToken } from "./lib/utils";
 
-const AUTH_ROUTES = ["/login"];
-const MANAGER_ROUTES = ["/manage"];
-const OWNER_ROUTES = ["/manage/accounts"];
-const GUEST_ROUTES = ["/guest"];
+const BASE_ROUTES = {
+  auth: ["/login"],
+  manager: ["/manage"],
+  owner: ["/manage/accounts"],
+  guest: ["/guest"],
+} as const;
+
+const AUTH_ROUTES = withLocales(BASE_ROUTES.auth);
+const MANAGER_ROUTES = withLocales(BASE_ROUTES.manager);
+const OWNER_ROUTES = withLocales(BASE_ROUTES.owner);
+const GUEST_ROUTES = withLocales(BASE_ROUTES.guest);
 const PROTECTED_ROUTES = [...MANAGER_ROUTES, ...GUEST_ROUTES];
+
+function withLocales(routes: readonly string[]) {
+  return routes.flatMap((route) => [
+    route,
+    ...routing.locales.map((locale) => `/${locale}${route}`),
+  ]);
+}
 
 function getRouteRegex(route: string) {
   return new RegExp(`^${route}(\/|$)`);
@@ -39,7 +55,7 @@ function deleteCookieTokens(request: NextRequest) {
   request.cookies.delete(StorageKey.RefreshToken);
 }
 
-export async function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const accessToken = request.cookies.get(StorageKey.AccessToken)?.value ?? "";
   const refreshToken =
@@ -84,9 +100,14 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  // i18n routing
+  const handleI18nRouting = createMiddleware(routing);
+  return handleI18nRouting(request);
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // Match all pathnames except for
+  // - … if they start with `/api`, `/trpc`, `/_next` or `/_vercel`
+  // - … the ones containing a dot (e.g. `favicon.ico`)
+  matcher: "/((?!api|trpc|_next|_vercel|.*\\..*).*)",
 };

@@ -7,15 +7,15 @@ export const accoutnNameSchema = z
   .max(256, { error: "Tên tài khoản không được quá 256 ký tự." });
 
 export const emailSchema = z.email({
-  error: "Email không hợp lệ.",
+  error: "invalidEmail",
 });
 
 export const avatarSchema = z.string().nullable();
 
 export const passwordSchema = z
   .string()
-  .min(6, { error: "Mật khẩu phải có ít nhất 6 ký tự." })
-  .max(100, { error: "Mật khẩu không được quá 100 ký tự." });
+  .min(6, { error: "invalidPassword" })
+  .max(100, { error: "invalidPassword" });
 
 export const confirmPasswordSchema = z
   .string()
