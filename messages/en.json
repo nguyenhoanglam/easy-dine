@@ -5,11 +5,12 @@
     "invalidPassword": "Password must contain between 6 and 100 characters"
   },
   "HomePage": {
-    "title": "Easy Dine restaurant",
-    "description": "Scan the QR code to order"
+    "title": "Scan to order",
+    "description": "Welcome to Easy Dine! Discover our delicious menu, place orders, and enjoy a seamless dining experience."
   },
   "LoginPage": {
-    "title": "Login"
+    "title": "Login",
+    "description": "Access your account to manage orders and settings."
   },
   "DishDetailPage": {
     "notFound": "Dish not found"

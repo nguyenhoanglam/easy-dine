@@ -29,9 +29,8 @@ function Switcher() {
     const newPathname = pathname.replace(`/${locale}`, `/${nextLocale}`);
     const href = queryString ? `${newPathname}?${queryString}` : newPathname;
 
-    window.location.href = href;
     console.log(href);
-    // router.replace(href, { locale: nextLocale });
+    router.replace(href, { locale: nextLocale });
   };
 
   return (

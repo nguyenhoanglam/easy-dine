@@ -17,6 +17,7 @@ export async function generateMetadata({ params }: PageProps) {
   return createMetadata({
     title: t("title"),
     description: t("description"),
+    pathname: `/${locale}/auth/refresh-token`,
     robots: { index: false },
   });
 }

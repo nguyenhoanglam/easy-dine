@@ -2,8 +2,24 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 
 import { getDishListAction } from "@/actions/dish";
+import { Locale } from "@/i18n/config";
 import { Link } from "@/i18n/navigation";
-import { formatCurrency, generateSlugUrl } from "@/lib/utils";
+import { createMetadata, formatCurrency, generateSlugUrl } from "@/lib/utils";
+import { PageProps } from "@/types/others";
+
+export async function generateMetadata({ params }: PageProps) {
+  const { locale } = await params;
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "HomePage",
+  });
+
+  return createMetadata({
+    title: t("title"),
+    description: t("description"),
+    pathname: `/${locale}`,
+  });
+}
 
 export default async function HomePage() {
   const t = await getTranslations("HomePage");

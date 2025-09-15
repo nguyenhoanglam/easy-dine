@@ -2,17 +2,15 @@ import { UseQueryResult } from "@tanstack/react-query";
 import { type ClassValue, clsx } from "clsx";
 import currency from "currency.js";
 import { format } from "date-fns";
+import { convert } from "html-to-text";
 import { decodeJwt } from "jose";
 import { BookX, CookingPot, HandCoins, Loader, Truck } from "lucide-react";
 import { Metadata } from "next";
-import { NestedKeyOf } from "next-intl";
-import { getTranslations } from "next-intl/server";
 import type { FieldPath, FieldValues, UseFormSetError } from "react-hook-form";
 import slugify from "slugify";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
-import { Locale } from "@/i18n/config";
 import {
   DishStatus,
   HttpStatus,
@@ -22,13 +20,7 @@ import {
 import { env } from "@/lib/env";
 import { HttpError, HttpResponse } from "@/types/http";
 import { TokenPayload } from "@/types/jwt";
-import {
-  DateFormatPattern,
-  LayoutProps,
-  PageMetadata,
-  PageProps,
-  PaginatedData,
-} from "@/types/others";
+import { DateFormatPattern, PageMetadata, PaginatedData } from "@/types/others";
 
 /*
  * UI
@@ -81,11 +73,16 @@ export function createMetadata({
     description,
     openGraph: {
       title,
-      description,
-      images: imageUrl ? [{ url: imageUrl }] : [],
+      ...(description
+        ? { description: htmlToDescriptionText(description) }
+        : undefined),
+      images: imageUrl
+        ? [{ url: imageUrl }]
+        : [{ url: `${env.NEXT_PUBLIC_APP_URL}/banner.jpg` }],
       url,
-      siteName: "Table Tap",
-      locale: "en_US",
+      siteName: "Easy Dine",
+      locale: "vi_VN",
+      alternateLocale: ["en_US"],
       type: "website",
     },
     alternates: {
@@ -300,4 +297,10 @@ export function generateSlugUrl({ name, id }: { name: string; id: number }) {
 
 export function parseIdFromSlugUrl(slug: string) {
   return Number(slug.split("-i.").pop());
+}
+
+export function htmlToDescriptionText(html: string) {
+  return convert(html, {
+    limits: { maxInputLength: 140 },
+  });
 }

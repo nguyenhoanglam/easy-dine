@@ -37,7 +37,7 @@ export type PaginatedData<T> = {
 };
 
 export type PageMetadata = {
-  title?: string;
+  title: string;
   description?: string;
   imageUrl?: string;
   pathname?: string;

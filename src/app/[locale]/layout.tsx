@@ -3,8 +3,10 @@ import "./globals.css";
 import { Roboto, Roboto_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
+import NextTopLoader from "nextjs-toploader";
 
 import { AppProvider, ThemeProvider } from "@/components";
+import Footer from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
 import { routing } from "@/i18n/routing";
 import { setLayoutLocale } from "@/services/locales";
@@ -29,8 +31,8 @@ export async function generateMetadata({ params }: LayoutProps) {
 
   return {
     title: {
-      template: `%s | ${t("title")}`,
-      default: t("title"),
+      template: "Easy Dine | %s",
+      default: "Easy Dine",
     },
     description: t("description"),
   };
@@ -46,6 +48,7 @@ export default function RootLayout({ children, params }: LayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${roboto.variable} ${robotoMono.variable} antialiased`}>
+        <NextTopLoader showSpinner={false} color="#00FF00" />
         <NextIntlClientProvider>
           <ThemeProvider
             attribute="class"
@@ -54,7 +57,10 @@ export default function RootLayout({ children, params }: LayoutProps) {
             disableTransitionOnChange
           >
             <Toaster />
-            <AppProvider>{children}</AppProvider>
+            <AppProvider>
+              {children}
+              <Footer />
+            </AppProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

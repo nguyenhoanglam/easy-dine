@@ -5,11 +5,12 @@
     "invalidPassword": "Mật khẩu phải có từ 6 đến 100 ký tự"
   },
   "HomePage": {
-    "title": "Nhà hàng Easy Dine",
-    "description": "Quét mã và gọi món"
+    "title": "Quét để đặt món",
+    "description": "Chào mừng đến với Easy Dine! Khám phá thực đơn ngon miệng của chúng tôi, đặt món và tận hưởng trải nghiệm ăn uống liền mạch."
   },
   "LoginPage": {
-    "title": "Đăng nhập"
+    "title": "Đăng nhập",
+    "description": "Truy cập vào tài khoản của bạn để quản lý đơn hàng và cài đặt."
   },
   "DishDetailPage": {
     "notFound": "Món ăn không tồn tại"
