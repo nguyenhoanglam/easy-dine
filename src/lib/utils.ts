@@ -11,6 +11,7 @@ import slugify from "slugify";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
+import { defaultLocale } from "@/i18n/config";
 import {
   DishStatus,
   HttpStatus,
@@ -271,7 +272,13 @@ export function getTableLink({
   token: string;
   tableNumber: number;
 }) {
-  return env.NEXT_PUBLIC_APP_URL + "/tables/" + tableNumber + "?token=" + token;
+  return (
+    env.NEXT_PUBLIC_APP_URL +
+    `/${defaultLocale}/tables/` +
+    tableNumber +
+    "?token=" +
+    token
+  );
 }
 
 export function getGoogleOauthUrl() {

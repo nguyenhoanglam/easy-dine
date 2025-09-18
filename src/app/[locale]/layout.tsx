@@ -7,6 +7,7 @@ import NextTopLoader from "nextjs-toploader";
 
 import { AppProvider, ThemeProvider } from "@/components";
 import Footer from "@/components/footer";
+import GoogleTag from "@/components/google-tag";
 import { Toaster } from "@/components/ui/sonner";
 import { routing } from "@/i18n/routing";
 import { setLayoutLocale } from "@/services/locales";
@@ -63,6 +64,7 @@ export default function RootLayout({ children, params }: LayoutProps) {
             </AppProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
+        <GoogleTag />
       </body>
     </html>
   );
